@@ -11,7 +11,7 @@ import UIKit
 class PhotoCell: UICollectionViewCell {
     
     
-    @IBOutlet weak var topTextLabel: UILabel!
-    @IBOutlet weak var bottomTextLabel: UILabel!
-    @IBOutlet weak var memedImage: UIImageView!
+   // @IBOutlet weak var topTextLabel: UILabel!
+    //@IBOutlet weak var bottomTextLabel: UILabel!
+    @IBOutlet weak var imageView: UIImageView!
 }

@@ -14,7 +14,16 @@ class FlickrClient: NSObject {
     
     // Session
     var session: NSURLSession!
+    var foundPhotos: [SimplePhoto]   = []
     
+    // MARK: - Shared Instance
+    class func sharedInstance() -> FlickrClient {
+        struct Singleton {
+            static var sharedInstance = FlickrClient()
+        }
+        return Singleton.sharedInstance
+    }
+
     override init() {
         super.init()
         session = NSURLSession.sharedSession()
@@ -24,70 +33,87 @@ class FlickrClient: NSObject {
     func getImagesByLocation(lat: Double, long: Double, completionHandler: (success: Bool, error: NSError?) -> Void)
     {
         
-    }
-    
-    // gets a random image of people sleeping in the library
-    // TODO: Delete this code
-    func getImage(completionHandler: (result: AnyObject!, error: NSError?) -> Void  )  {
-        
-        let methodArguments = [
-            methodParameters.method: const.GETPHOTOS,
+        let bbox = BoundingBox()
+        let bboxStr = bbox.GetBoundingBox(Location(Latitude: lat, Longitude: long), halfSideInKm: 20.0)
+        print(bboxStr)
+        let methodArguments: [String: AnyObject] = [
+            methodParameters.method: const.PHOTO_SEARCH,
             methodParameters.api_key: const.API_KEY,
-            methodParameters.galleryId: "5704-72157622566655097",
             methodParameters.extras: const.EXTRAS,
             methodParameters.format: const.DATA_FORMAT,
-            methodParameters.noJsonCallback: const.NO_JSON_CALLBACK
+            methodParameters.noJsonCallback: const.NO_JSON_CALLBACK,
+            //methodParameters.bbox: bboxStr,
+            "lat" : lat,
+            "lon" : long,
+            methodParameters.page: 1,
+            methodParameters.perPage: 21
         ]
+        //TODO:
+        print("methodargs \(methodArguments.count)")
         
-       self.taskForGETMethod(methodArguments){ JSONResult, error in
+        self.taskForGETMethod(methodArguments){ JSONResult, error in
             
-            /*guard  let _error = error where error != nil else {
-            print(error)
-            completionHandler(result: nil, error: error)
-            return
+            guard error == nil else {
+                print(error)
+                completionHandler(success: false, error: error)
+                return
             }
-            */
             
-            guard let photosDictionary = JSONResult.valueForKey("photos") as? NSDictionary else {
+            
+            let domainText = "getImagesByLocation"
+            guard let photosDictionary = JSONResult.valueForKey(jsonResponse.photos) as? NSDictionary else {
                 let errorText = "Cant find key 'photo' in photosDictionary"
                 print("\(errorText)")
                 
-                let dataError = NSError(domain: "getImage", code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
-                completionHandler(result: nil, error: dataError)
+                if let dict = JSONResult as? NSDictionary {
+                    for x in dict {
+                        print(x)
+                    }
+                }
+                
+                let dataError = NSError(domain: domainText, code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
+                //FlickrClient.errorForData(data: nil, response: jsonResponse, error: dataError)
+                
+                completionHandler(success: false, error: dataError)
                 return
             }
             
-            guard let photoArray = photosDictionary.valueForKey("photo") as? [[String: AnyObject]] else {
+            guard let photoArray = photosDictionary.valueForKey(jsonResponse.photo) as? [[String: AnyObject]] else {
                 let errorText = "Cant find key 'photo' in photosDictionary"
                 print("\(errorText)")
-                let dataError = NSError(domain: "getImage", code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
-                completionHandler(result: nil, error: dataError)
+                let dataError = NSError(domain: domainText, code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
+                completionHandler(success: false, error: dataError)
                 return
             }
             
-            /* 6 - Grab a single, random image */
-            let randomPhotoIndex = Int(arc4random_uniform(UInt32(photoArray.count)))
-            let photoDictionary = photoArray[randomPhotoIndex] as [String: AnyObject]
-            
-            /* 7 - Get the image url and title */
-            let photoTitle = photoDictionary["title"] as? String
-            let imageUrlString = photoDictionary["url_m"] as? String
-            let imageURL = NSURL(string: imageUrlString!)
-            
-            /* 8 - If an image exists at the url, set the image and title */
-            guard let imageData = NSData(contentsOfURL: imageURL!)  else {
-                let errorText = "Image does not exist at \(imageURL)"
+            guard let numPages = photosDictionary[jsonResponse.pages] as? Int else {
+                let errorText = "Cant find key number of pages"
                 print("\(errorText)")
-                let dataError = NSError(domain: "getImage", code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
-                completionHandler(result: nil, error: dataError)
+                let dataError = NSError(domain: domainText, code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
+                completionHandler(success: false, error: dataError)
                 return
             }
             
-            let photo = SimplePhoto(titleOfPhoto: photoTitle!, image: UIImage(data: imageData)!)
-            completionHandler(result: photo, error: nil)
-            return
-        }
+            for photo in photoArray {
+                
+                let photoUrl = photo[jsonResponse.imageType] as! String
+                self.taskForGETImage(photoUrl, completionHandler: {
+                    success, imageData, error in
+                    
+                    if success != true {
+                        print("error extracting " + photoUrl )
+                    } else {
+                        
+                        var thisPhoto = SimplePhoto(titleOfPhoto: "", image: UIImage(data: imageData!)!, location: Location(Latitude: lat, Longitude: long))
+                        self.foundPhotos.append(thisPhoto)
+                        print("found Photos \(self.foundPhotos.count)" )
+                    }
+                }) // endTaskGetImage
+            } // end for
+        } // endTaskForGetMethod
+        completionHandler(success: true, error: nil)
     }
+    
     
     //MARK: General networking funcs
     
@@ -128,13 +154,13 @@ class FlickrClient: NSObject {
     }
     
     
-    func taskForGETImage(filePath: String, completionHandler: (imageData: NSData?, error: NSError?) ->  Void) -> NSURLSessionTask {
+    func taskForGETImage(filePath: String, completionHandler: (success: Bool, imageData: NSData?, error: NSError?) ->  Void) -> NSURLSessionTask {
         
         /* 1. Set the parameters */
         // There are none...
         
         /* 2/3. Build the URL and configure the request */
-        let request =  NSMutableURLRequest(URL: NSURL(fileURLWithPath: filePath) )
+        let request =  NSMutableURLRequest(URL: NSURL(string: filePath)!)
         
         /* 4. Make the request */
         let task = session.dataTaskWithRequest(request) {data, response, downloadError in
@@ -142,12 +168,14 @@ class FlickrClient: NSObject {
             /* 5/6. Parse the data and use the data (happens in completion handler) */
             guard  downloadError == nil else {
                 let newError = FlickrClient.errorForData(data, response: response, error: downloadError!)
-                completionHandler(imageData: nil, error: newError)
+                
+               // print( response?.description)
+                completionHandler(success: false, imageData: nil, error: newError)
                 return
             }
             
             // Success!
-            completionHandler(imageData: data, error: nil)
+            completionHandler(success: true, imageData: data, error: nil)
         }
         
         /* 7. Start the request */
@@ -161,12 +189,24 @@ class FlickrClient: NSObject {
     /* Helper: Given a response with error, see if a status_message is returned, otherwise return the previous error */
     class func errorForData(data: NSData?, response: NSURLResponse?, error: NSError) -> NSError {
         
-        let  parsedResult: NSDictionary
+        if data == nil {
+            return error
+        }
         
+        let  parsedResult: NSDictionary
         do {
-            parsedResult = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String : AnyObject]
+            parsedResult = ((try? NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments)) as? [String : AnyObject])!
             
-        } catch error as NSError {
+            if let status = parsedResult[jsonResponse.status] as? String {
+                let msg = parsedResult[jsonResponse.msg] as? String
+                if status == jsonRepsonseVals.failure {
+                    let reasonForFailure: [NSObject: AnyObject] = [NSLocalizedDescriptionKey: msg!]
+                    print("Error converting to json")
+                    return NSError(domain: "errorForData", code: 0, userInfo: reasonForFailure  )
+                    
+                }
+            }
+        }catch error as NSError {
             print("Error converting to json")
             return error
             
@@ -232,35 +272,6 @@ class FlickrClient: NSObject {
         return (!urlVars.isEmpty ? "?" : "") + urlVars.joinWithSeparator("&")
     }
     
-    // MARK: - Shared Instance
-    class func sharedInstance() -> FlickrClient {
-        struct Singleton {
-            static var sharedInstance = FlickrClient()
-        }
-        return Singleton.sharedInstance
-    }
 }
 
-
-// Bounding Box
-
-struct BoundingBox {
-    var lowerLeftLongitude: Double
-    var lowerLeftLatitude: Double
-    var upperRightLongitude: Double
-    var upperRightLatitude: Double
-    
-    // create bounding box
-    init(longitude: Double, latitude: Double, span: Double) {
-        self.lowerLeftLatitude = max(latitude - span, -90)
-        self.lowerLeftLongitude = max(longitude - span, -180)
-        self.upperRightLongitude = min(longitude + span, 180)
-        self.upperRightLatitude = min(latitude + span, 90)
-        
-    }
-    
-    func toString() -> String {
-        return ("\(lowerLeftLongitude), \(lowerLeftLatitude), \(upperRightLongitude), \(upperRightLatitude)")
-    }
-}
 

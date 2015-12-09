@@ -11,11 +11,13 @@ import MapKit
 
 
 class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
-
+    
     @IBOutlet weak var mapView: MKMapView!
-
+    
+    @IBOutlet weak var deletePinView: UIView!
     var editButton: UIBarButtonItem! = nil
     var longPressGesture: UILongPressGestureRecognizer! = nil
+    var lastSeletedLocation: Location!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,6 +27,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
         
         let rightButtons = [editButton!]
         self.navigationItem.rightBarButtonItems = rightButtons
+        
         mapView.delegate = self
         
         longPressGesture = UILongPressGestureRecognizer(target: self, action: "addAnnotation:")
@@ -32,66 +35,61 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
         
         mapView.addGestureRecognizer(longPressGesture)
         
-        //pinButton = UIBarButtonItem(image: pinImage, style: UIBarButtonItemStyle.Plain, target: self, action: "pinButtonPressed:")
-
+        
         
     }
     
-    //MARK: MapView Delegates and such
-    
-    // create a view with a "right callout accessory view".
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
-        
-        let reuseId = "pin"
-        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
-        
-        if pinView == nil {
-            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-            pinView!.canShowCallout = true
-            pinView!.pinTintColor = UIColor.redColor()
-            pinView!.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
-            pinView?.animatesDrop = true
-        }
-        else {
-            pinView!.annotation = annotation
-        }
-        
-        return pinView
-    }
-    
-    // delegate method is implemented to respond to taps. It opens the system browser
-    // to the URL specified in the annotationViews subtitle property.
-    func mapView(mapView: MKMapView, annotationView: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        
-        if control == annotationView.rightCalloutAccessoryView {
-            let app = UIApplication.sharedApplication()
-            app.openURL(NSURL(string: annotationView.annotation!.subtitle!!)!)
+       override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if (segue.identifier == "toPhotoAlbum") {
+            
+            // set locations here
+            let navigationController = segue.destinationViewController as! PhotoAlbumsVC
         }
     }
     
-    
-    
+    func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        
+              
+        lastSeletedLocation = Location(Latitude: view.annotation!.coordinate.latitude, Longitude: view.annotation!.coordinate.longitude)
+        
+        dispatch_async(dispatch_get_main_queue(), {
+            //let controller = self.storyboard!.instantiateViewControllerWithIdentifier("photoAlbums")
+            //self.presentViewController(controller, animated: true, completion: nil)
+            self.performSegueWithIdentifier("toPhotoAlbum", sender: nil)
+        })
+    }
+  
     
     func editButtonPressed(sender: UIButton) {
-        print("edit Button pressed")
         dispatch_async(dispatch_get_main_queue(), {
-            let controller = self.storyboard!.instantiateViewControllerWithIdentifier("photoAlbumsVC")
-            self.presentViewController(controller, animated: true, completion: nil)
+           //Toogle view hidden
+            self.deletePinView.hidden = !self.deletePinView.hidden
+            
         })
-
+        
     }
     
     func addAnnotation(gestureRecognizer:UIGestureRecognizer){
+        
         if gestureRecognizer.state == UIGestureRecognizerState.Began {
             let touchPoint = gestureRecognizer.locationInView(mapView)
             let newCoordinates = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
             let annotation = MKPointAnnotation()
             annotation.coordinate = newCoordinates
             mapView.addAnnotation(annotation)
+            
+            let pinLoc = Location(Latitude: annotation.coordinate.latitude, Longitude: annotation.coordinate.longitude )
+            
+            FlickrClient.sharedInstance().getImagesByLocation(pinLoc.latitude, long: pinLoc.longitude)
+                {
+                    success, error in
+                    if success {
+                        
+                    } else {
+                        print( error?.localizedDescription )
+                    }
+            }
         }
-        
     }
-
-
 }
 

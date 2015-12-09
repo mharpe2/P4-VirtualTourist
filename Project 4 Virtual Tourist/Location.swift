@@ -6,4 +6,14 @@
 //  Copyright © 2015 hxx. All rights reserved.
 //
 
-import Foundation
+class Location {
+    
+    var latitude: Double
+    var longitude: Double
+    
+    init(Latitude: Double, Longitude: Double ) {
+        latitude = Latitude
+        longitude = Longitude
+    }
+    
+}

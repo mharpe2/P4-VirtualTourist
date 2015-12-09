@@ -12,26 +12,51 @@ import MapKit
 class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
     
     
+    @IBOutlet weak var layout: UICollectionViewFlowLayout!
+    @IBOutlet weak var mapView: MKMapView!
+    var oKButton: UIBarButtonItem!
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        //Mark: UI - Custom Navigation buttons
+        oKButton = UIBarButtonItem(title: "Ok", style: .Plain, target: self, action: "oKButtonPressed:")
+        
+        let leftButtons = [oKButton!]
+        self.navigationItem.leftBarButtonItems = leftButtons
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 0
+
+    }
+    
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
-        return 1
+        return FlickrClient.sharedInstance().foundPhotos.count
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         
-//        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("colCell", forIndexPath: indexPath) as! MemeCollectionCell
-//        let meme = memes[indexPath.row]
-//        
-//        // Setup cell
-//        cell.memedImage.contentMode = .ScaleAspectFit
-//        cell.memedImage.image = meme.memeImage
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("photoCell", forIndexPath: indexPath) as! PhotoCell    
+        let photo  = FlickrClient.sharedInstance().foundPhotos[indexPath.row]
+        
+        // Setup cell
+        //cell.imageView.contentMode = .ScaleAspectFit
+        cell.imageView.image = photo.image
         
         
-        return UICollectionViewCell()
+        return cell
+        
     }
+    
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath:NSIndexPath)
     {
+        
+       
+        var cell = collectionView.cellForItemAtIndexPath(indexPath)
+        cell!.layer.borderWidth = 3.0
+        cell!.layer.borderColor = UIColor.grayColor().CGColor
         
         /*let detailController = storyboard!.instantiateViewControllerWithIdentifier("memeDetailView") as! MemeDetailViewController
         detailController.meme = memes[indexPath.row]
@@ -67,6 +92,10 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         
     }
     
+    @IBAction func oKButtonPressed(sender: AnyObject) {
+        
+        navigationController?.popViewControllerAnimated(true)
+    }
 
 
     

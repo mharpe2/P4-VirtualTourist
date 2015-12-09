@@ -9,6 +9,7 @@
 extension FlickrClient {
     
     
+    // Right Side values
     struct const {
         static let BASE_URL = "https://api.flickr.com/services/rest/"
         static let PHOTO_SEARCH = "flickr.photos.search"
@@ -20,6 +21,7 @@ extension FlickrClient {
         static let NO_JSON_CALLBACK = "1"
     }
     
+    // Left Side values
     struct methodParameters {
         static let api_key = "api_key"
         static let method = "method"
@@ -30,6 +32,10 @@ extension FlickrClient {
         static let noJsonCallback = "nojsoncallback"
         static let safeSearch = "safe_search"
         static let galleryId = "gallery_id"
+        static let Latitude = "lat"
+        static let Longitude = "lon"
+        static let page = "page"
+        static let perPage = "per_page"
     }
     
     struct jsonResponse{
@@ -38,6 +44,14 @@ extension FlickrClient {
         static let pages = "pages"
         static let title = "title"
         static let imageType = "url_m"
+        static let status = "stat"
+        static let msg = "message"
+        static let code = "code"
+    }
+    
+    struct jsonRepsonseVals {
+        static let success = "ok"
+        static let failure = "fail"
     }
     
     class func getPhotoByLocationParameters() -> [String:String] {
