@@ -6,54 +6,47 @@
 //  Copyright © 2015 Udacity. All rights reserved.
 //
 
-import Foundation
 import UIKit
+import CoreData
 
-class Photo {
+class SimplePhoto: NSManagedObject {
+    
+    @NSManaged var title: String
+    @NSManaged var image: UIImage
+    @NSManaged var place: Location?
     
     struct Keys {
         static let path = "path"
         static let title = "title"
-        static let imageURL = "imageURL"
+        static let image = "image"
     }
-    
-    struct Error {
-        static let noPath = "Path not found in init"
-        static let noTitle = "Title not found in init"
-    }
-    
-    var path: String? = nil
-    var title: String = ""
-    var imageData: NSData? = nil
-    var imageURL: String = ""
-    var image: UIImage? = nil
-    
-    init(dictionary: [String : AnyObject] ) {
-        
-        title = (dictionary[Keys.title] as? String)!
-        path = (dictionary[Keys.path] as? String)!
-        imageURL = (dictionary[Keys.imageURL] as? String)!
-        
-        /* 8 - If an image exists at the url, set the image and title */
-        if let imageData = NSData(contentsOfURL: NSURL(fileURLWithPath: self.imageURL)) {
-            self.image = UIImage(data: imageData)
-            
-        }
-    } // end init
-}
 
-class SimplePhoto {
     
-    var title: String = ""
-    var image: UIImage? = nil
-    var location: Location
-    
-    init(titleOfPhoto: String, image: UIImage, location: Location) {
-        self.title = titleOfPhoto
-        self.image = image
-        self.location = location
+    override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
+    init(dictionary: [String : AnyObject], context: NSManagedObjectContext) {
+        
+        let entity =  NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
+        super.init(entity: entity,insertIntoManagedObjectContext: context)
+        
+        title = dictionary[Keys.title] as! String
+        image = (dictionary[Keys.image] as? UIImage)!
+    }
+    
+    init(withTitle: String, image: UIImage, location: Location, context: NSManagedObjectContext) {
+        
+        let entity =  NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
+        super.init(entity: entity,insertIntoManagedObjectContext: context)
+        
+        self.title = withTitle
+        self.image = image
+        self.place = location
+
+
+    }
    
     
 }
+

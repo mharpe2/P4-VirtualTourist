@@ -9,6 +9,7 @@
 import UIKit
 import MapKit
 import Foundation
+import CoreData
 
 class FlickrClient: NSObject {
     
@@ -23,6 +24,11 @@ class FlickrClient: NSObject {
         }
         return Singleton.sharedInstance
     }
+    
+    // CoreData
+    lazy var sharedContext = {
+        CoreDataStackManager.sharedInstance().managedObjectContext
+    }()
 
     override init() {
         super.init()
@@ -32,11 +38,7 @@ class FlickrClient: NSObject {
     
     func getImagesByLocation(lat: Double, long: Double, completionHandler: (success: Bool, error: NSError?) -> Void)
     {
-        
-        let bbox = BoundingBox()
-        let bboxStr = bbox.GetBoundingBox(Location(Latitude: lat, Longitude: long), halfSideInKm: 20.0)
-        print(bboxStr)
-        let methodArguments: [String: AnyObject] = [
+            let methodArguments: [String: AnyObject] = [
             methodParameters.method: const.PHOTO_SEARCH,
             methodParameters.api_key: const.API_KEY,
             methodParameters.extras: const.EXTRAS,
@@ -58,7 +60,6 @@ class FlickrClient: NSObject {
                 completionHandler(success: false, error: error)
                 return
             }
-            
             
             let domainText = "getImagesByLocation"
             guard let photosDictionary = JSONResult.valueForKey(jsonResponse.photos) as? NSDictionary else {
@@ -104,9 +105,13 @@ class FlickrClient: NSObject {
                         print("error extracting " + photoUrl )
                     } else {
                         
-                        var thisPhoto = SimplePhoto(titleOfPhoto: "", image: UIImage(data: imageData!)!, location: Location(Latitude: lat, Longitude: long))
-                        self.foundPhotos.append(thisPhoto)
+                        let thisPhoto = SimplePhoto(withTitle: "", image: UIImage(data: imageData!)!, location: Location(latitude: lat, longitude: long, context: self.sharedContext), context: self.sharedContext)
+                        //self.foundPhotos.append(thisPhoto)
                         print("found Photos \(self.foundPhotos.count)" )
+                        
+                        dispatch_async(dispatch_get_main_queue(), {
+                            CoreDataStackManager.sharedInstance().saveContext()
+                        })
                     }
                 }) // endTaskGetImage
             } // end for

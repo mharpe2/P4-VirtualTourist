@@ -17,7 +17,7 @@ import CoreData
  *
  */
 
-private let SQLITE_FILE_NAME = "FavoriteActors.sqlite"
+private let SQLITE_FILE_NAME = "VirtualTourist.sqlite"
 
 class CoreDataStackManager {
     
@@ -51,9 +51,30 @@ class CoreDataStackManager {
 
         print("Instantiating the managedObjectModel property")
         
-        let modelURL = NSBundle.mainBundle().URLForResource("Model", withExtension: "momd")!
+        
+        
+        let modelURL = NSBundle.mainBundle().URLForResource("VirtualTourist", withExtension: "momd")!
         return NSManagedObjectModel(contentsOfURL: modelURL)!
     }()
+    
+    
+    //MARK: Delete later
+//    func listFilesFromDocumentsFolder() -> [String]
+//    {
+//        var theError = NSErrorPointer()
+//        let dirs = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true) as? [String]
+//        if dirs != nil {
+//            let dir = dirs![0]
+//            let fileList = try NSFileManager.defaultManager().contentsOfDirectoryAtPath(dir)
+//            catch _ {
+//                
+//            }
+//            return fileList as! [String]   // edit: added ! for Swift 1.2 compatibitily
+//        }else{
+//            let fileList = [""]
+//            return fileList
+//        }
+//    }
     
     /**
      * The Persistent Store Coordinator is an object that the Context uses to interact with the underlying file system. Usually

@@ -16,6 +16,10 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     @IBOutlet weak var mapView: MKMapView!
     var oKButton: UIBarButtonItem!
     
+    lazy var sharedContext = {
+        CoreDataStackManager.sharedInstance().managedObjectContext
+    }()
+
     
     override func viewDidLoad() {
         super.viewDidLoad()

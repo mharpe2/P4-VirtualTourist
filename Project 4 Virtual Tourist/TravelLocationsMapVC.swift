@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
     
@@ -17,6 +18,11 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
     var editButton: UIBarButtonItem! = nil
     var longPressGesture: UILongPressGestureRecognizer! = nil
     var lastSeletedLocation: Location!
+    
+    lazy var sharedContext = {
+        CoreDataStackManager.sharedInstance().managedObjectContext
+    }()
+
     
     // Manage pin delete modes
     // toggle deletePinView / edit button 
@@ -59,6 +65,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
         longPressGesture.minimumPressDuration = 1.0
         
         mapView.addGestureRecognizer(longPressGesture)
+        mapView.addAnnotations( fetchLocations() )
         
     }
     
@@ -80,7 +87,9 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
             return
         }
         
-        lastSeletedLocation = Location(Latitude: view.annotation!.coordinate.latitude, Longitude: view.annotation!.coordinate.longitude)
+        let location = [Location.Keys.latitude: view.annotation!.coordinate.latitude,
+                        Location.Keys.longitude: view.annotation!.coordinate.longitude]
+        lastSeletedLocation = Location(dictionary: location, context: sharedContext)
         
         dispatch_async(dispatch_get_main_queue(), {
             //let controller = self.storyboard!.instantiateViewControllerWithIdentifier("photoAlbums")
@@ -106,7 +115,10 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
             annotation.coordinate = newCoordinates
             mapView.addAnnotation(annotation)
             
-            let pinLoc = Location(Latitude: annotation.coordinate.latitude, Longitude: annotation.coordinate.longitude )
+            let location = [Location.Keys.latitude: annotation.coordinate.latitude,
+                Location.Keys.longitude: annotation.coordinate.longitude]
+
+            let pinLoc = Location(dictionary: location, context: sharedContext )
             
             FlickrClient.sharedInstance().getImagesByLocation(pinLoc.latitude, long: pinLoc.longitude)
                 {
@@ -119,6 +131,30 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
             }
         }
     }
-}
+    
+    //Mark: CoreData
+    func fetchLocations() -> [Location] {
+        
+        var error: NSError!
+        
+        let results: [AnyObject]?
+        let fetchRequest = NSFetchRequest(entityName: "Location")
+        
+        do {
+            results = try sharedContext.executeFetchRequest(fetchRequest)
+        } catch error as NSError {
+        
+            results = nil
+        } catch _ {
+            results = nil
+        }
+        
+        if error != nil {
+            displayError(self, errorString: "Error occured accessing previously stored locations")
+        }
+        return results as! [Location]
+    }
+    
 
+}
 
