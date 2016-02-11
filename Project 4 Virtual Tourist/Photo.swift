@@ -9,16 +9,17 @@
 import UIKit
 import CoreData
 
-class SimplePhoto: NSManagedObject {
+class Photo: NSManagedObject {
     
-    @NSManaged var title: String
-    @NSManaged var image: UIImage
-    @NSManaged var place: Location?
+    @NSManaged var location: Location?
+    @NSManaged var url: String?
+    @NSManaged var imagePath: String?
     
     struct Keys {
-        static let path = "path"
-        static let title = "title"
-        static let image = "image"
+        static let url = "url"
+        static let photo = "Photo"
+        static let location = "Location"
+        static let path = "pathToImage"
     }
 
     
@@ -28,25 +29,25 @@ class SimplePhoto: NSManagedObject {
     
     init(dictionary: [String : AnyObject], context: NSManagedObjectContext) {
         
-        let entity =  NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
+        //Core Data
+        let entity =  NSEntityDescription.entityForName(Keys.photo, inManagedObjectContext: context)!
         super.init(entity: entity,insertIntoManagedObjectContext: context)
         
-        title = dictionary[Keys.title] as! String
-        image = (dictionary[Keys.image] as? UIImage)!
+        // Dictionary
+        url = (dictionary[Keys.url] as? String)!
+        location = (dictionary[Keys.location] as? Location)
+        imagePath = (dictionary[Keys.path] as? String)
     }
     
-    init(withTitle: String, image: UIImage, location: Location, context: NSManagedObjectContext) {
-        
-        let entity =  NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
-        super.init(entity: entity,insertIntoManagedObjectContext: context)
-        
-        self.title = withTitle
-        self.image = image
-        self.place = location
-
-
-    }
-   
     
+    var image: UIImage? {
+        get {
+            return FlickrClient.Caches.imageCache.imageWithIdentifier(imagePath)
+        }
+        
+        set {
+            return FlickrClient.Caches.imageCache.storeImage(image, withIdentifier: imagePath!)
+        }
+    }
 }
 

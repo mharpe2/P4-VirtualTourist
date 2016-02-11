@@ -6,8 +6,15 @@
 //  Copyright © 2015 hxx. All rights reserved.
 //
 
+import Foundation
+
+
+// MARK: - Files Support
+private let _documentsDirectoryURL: NSURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
+private let _fileURL: NSURL = _documentsDirectoryURL.URLByAppendingPathComponent("Flickr-Context")
+
 extension FlickrClient {
-    
+
     
     // Right Side values
     struct const {

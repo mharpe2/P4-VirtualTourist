@@ -15,7 +15,7 @@ class FlickrClient: NSObject {
     
     // Session
     var session: NSURLSession!
-    var foundPhotos: [SimplePhoto]   = []
+    var foundPhotos: [Photo]   = []
     
     // MARK: - Shared Instance
     class func sharedInstance() -> FlickrClient {
@@ -35,6 +35,9 @@ class FlickrClient: NSObject {
         session = NSURLSession.sharedSession()
     }
     
+    struct Caches {
+        static let imageCache = ImageCache()
+    }
     
     func getImagesByLocation(lat: Double, long: Double, completionHandler: (success: Bool, error: NSError?) -> Void)
     {
@@ -44,7 +47,6 @@ class FlickrClient: NSObject {
             methodParameters.extras: const.EXTRAS,
             methodParameters.format: const.DATA_FORMAT,
             methodParameters.noJsonCallback: const.NO_JSON_CALLBACK,
-            //methodParameters.bbox: bboxStr,
             "lat" : lat,
             "lon" : long,
             methodParameters.page: 1,
@@ -98,6 +100,9 @@ class FlickrClient: NSObject {
             for photo in photoArray {
                 
                 let photoUrl = photo[jsonResponse.imageType] as! String
+                //TODO: remove prints
+                print("\(photoUrl)" )
+                
                 self.taskForGETImage(photoUrl, completionHandler: {
                     success, imageData, error in
                     
@@ -105,17 +110,33 @@ class FlickrClient: NSObject {
                         print("error extracting " + photoUrl )
                     } else {
                         
-                        let thisPhoto = SimplePhoto(withTitle: "", image: UIImage(data: imageData!)!, location: Location(latitude: lat, longitude: long, context: self.sharedContext), context: self.sharedContext)
-                        //self.foundPhotos.append(thisPhoto)
-                        print("found Photos \(self.foundPhotos.count)" )
+                        let cord = CLLocationCoordinate2D(latitude: lat, longitude: long)
+                        if let imageData = imageData {
+                            let image = UIImage(data: imageData)
+                            print("\(image?.description)")
+                            let location = Location(coordiante: cord, context: self.sharedContext)
+                            
+                            // Make photo dictionary for creation of nsmanaed object
+                            let filename = self.getLastPathComponent(photoUrl)
+                            print( filename )
+
+                            let dict = [Photo.Keys.url : photoUrl, Photo.Keys.location : location, Photo.Keys.path : filename]
+                            let p = Photo(dictionary: dict, context: self.sharedContext)
+                            p.image = image
+                            
+                            dispatch_async(dispatch_get_main_queue(), {
+                                CoreDataStackManager.sharedInstance().saveContext()
+                            })
+                        } else {
+                          print("image empty")
+                            completionHandler(success: false, error: nil)
+                        }
                         
-                        dispatch_async(dispatch_get_main_queue(), {
-                            CoreDataStackManager.sharedInstance().saveContext()
-                        })
                     }
                 }) // endTaskGetImage
             } // end for
         } // endTaskForGetMethod
+        
         completionHandler(success: true, error: nil)
     }
     
@@ -124,9 +145,6 @@ class FlickrClient: NSObject {
     
     func taskForGETMethod(parameters: [String : AnyObject], completionHandler: (result: AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask {
         
-        /* 1. Set the parameters */
-        //var mutableParameters = parameters
-        //mutableParameters[ParameterKeys.ApiKey] = FlickrC
         
         /* 2/3. Build the URL and configure the request */
         let urlString = const.BASE_URL + escapedParameters(parameters)
@@ -163,6 +181,7 @@ class FlickrClient: NSObject {
         
         /* 1. Set the parameters */
         // There are none...
+        print("taskForGETImage")
         
         /* 2/3. Build the URL and configure the request */
         let request =  NSMutableURLRequest(URL: NSURL(string: filePath)!)
@@ -276,6 +295,13 @@ class FlickrClient: NSObject {
         
         return (!urlVars.isEmpty ? "?" : "") + urlVars.joinWithSeparator("&")
     }
+    
+    /* helper function: get last path component of URL */
+    //
+    func getLastPathComponent(fullPath: String) -> String {
+        return ( fullPath as NSString).lastPathComponent
+    }
+
     
 }
 
