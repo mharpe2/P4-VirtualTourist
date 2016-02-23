@@ -9,21 +9,18 @@
 import CoreData
 import MapKit
 
-
-
-class Location: NSManagedObject, MKAnnotation {
+class Location: NSManagedObject, MKAnnotation{
     
     @NSManaged var latitude: Double
     @NSManaged var longitude: Double
-    @NSManaged var photos: NSSet
+    @NSManaged var photos: [Photo]
     
     
     struct Keys {
-        //static let latitude = "latitude"
-        //static let longitude = "longitude"
         static let location = "Location"
     }
     
+    // conform to MKAnnotation
     var coordinate: CLLocationCoordinate2D {
         set {
             self.latitude = newValue.latitude
@@ -34,6 +31,13 @@ class Location: NSManagedObject, MKAnnotation {
             return CLLocationCoordinate2DMake(latitude, longitude)
         }
     }
+    
+    override var hashValue: Int {
+        get {
+            return latitude.hashValue ^ longitude.hashValue
+        }
+    }
+    
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
@@ -47,10 +51,13 @@ class Location: NSManagedObject, MKAnnotation {
         
         longitude = coordiante.longitude
         latitude = coordiante.latitude
-        photos = NSSet()
-        //print("\(photos.count)" )
-        
     }
     
-    
 }
+
+//MARK: == Operator
+// isEqual
+//func ==(lhs: Location, rhs: Location) -> Bool {
+//    
+//    return ( (lhs.longitude == rhs.longitude) && (lhs.latitude == rhs.latitude))
+//}

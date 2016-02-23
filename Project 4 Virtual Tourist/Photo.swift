@@ -13,13 +13,15 @@ class Photo: NSManagedObject {
     
     @NSManaged var location: Location?
     @NSManaged var url: String?
-    @NSManaged var imagePath: String?
+    @NSManaged var fileName: String?
+    @NSManaged var title: String?
     
     struct Keys {
-        static let url = "url"
+        static let url = "url_m"
+        static let title = "title"
         static let photo = "Photo"
         static let location = "Location"
-        static let path = "pathToImage"
+        static let fileName = "fileName"
     }
 
     
@@ -36,18 +38,21 @@ class Photo: NSManagedObject {
         // Dictionary
         url = (dictionary[Keys.url] as? String)!
         location = (dictionary[Keys.location] as? Location)
-        imagePath = (dictionary[Keys.path] as? String)
+        fileName = getLastPathComponent(url!) //generate filename
+        title = (dictionary[Keys.title] as? String )
     }
     
     
-    var image: UIImage? {
-        get {
-            return FlickrClient.Caches.imageCache.imageWithIdentifier(imagePath)
-        }
-        
-        set {
-            return FlickrClient.Caches.imageCache.storeImage(image, withIdentifier: imagePath!)
-        }
+    func getImage() -> UIImage? {
+        return FlickrClient.Caches.imageCache.imageWithIdentifier(fileName)
+    }
+    
+    func saveImage(image: UIImage?) {
+        FlickrClient.Caches.imageCache.storeImage(image, withIdentifier: fileName!)
+    }
+     
+    func getLastPathComponent(fullPath: String) -> String {
+        return ( fullPath as NSString).lastPathComponent
     }
 }
 

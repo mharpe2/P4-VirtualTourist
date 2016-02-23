@@ -65,7 +65,10 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
         mapView.delegate = self
         
         longPressGesture = UILongPressGestureRecognizer(target: self, action: "addAnnotation:")
-        longPressGesture.minimumPressDuration = 1.0
+        longPressGesture.minimumPressDuration = 0.5
+        longPressGesture.numberOfTapsRequired = 0
+        longPressGesture.numberOfTouchesRequired = 1
+        //longPressGesture
         
         mapView.addGestureRecognizer(longPressGesture)
         mapView.addAnnotations( fetchLocations() )
@@ -91,85 +94,95 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
     // MARK: Map Functions
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         
-        guard let pin = view.annotation as? Location else {
+        guard let coordinate = view.annotation?.coordinate else {
             print("location not converted to annotation")
             return
         }
         
-        dispatch_async(dispatch_get_main_queue(), {
+        let pin = Location(coordiante: coordinate, context: sharedContext)
+        //view.annotation as! Location
+        
+        // Check for if pin is to be deleted
+        if self.editButton.title == const.done {
             
-            if self.editButton.title == const.done {
-                
-                print("Deleting location")
-                //dispatch_async(dispatch_get_main_queue(), {
-                // delete location if it exists
-                self.sharedContext.deleteObject(pin)
-                
-                CoreDataStackManager.sharedInstance().saveContext()
-                
-                self.mapView.removeAnnotations(self.mapView.annotations)
-                self.mapView.addAnnotations( self.fetchLocations() )
-                return
-                //})
+            print("Deleting location \(coordinate)")
+            //self.sharedContext.deleteObject(pin)
+            if let elementsDeleted = self.removeDuplicateLocations(pin) {
+                print("removed \(elementsDeleted)")
             }
+            CoreDataStackManager.sharedInstance().saveContext()
+            mapView.removeAnnotation(pin)
+            let allAnnotations = mapView.annotations
+            mapView.removeAnnotations(allAnnotations)
+            mapView.addAnnotations(self.fetchLocations())
             
-            //dispatch_async(dispatch_get_main_queue(), {
+        } else {
             
             print ("going to photo albums")
             // get last selected location
-            //let location = view.annotation as! Location
             self.selectedLocation = pin
+            
             // get PhotoAlbumsView controller
             let photoAlbumsVC = self.storyboard?.instantiateViewControllerWithIdentifier("photoAlbums") as! PhotoAlbumsVC
             
             // load selected location into photoVC
             photoAlbumsVC.selectedLocation = pin
             self.navigationController?.pushViewController(photoAlbumsVC, animated: true)
-            
-        })
+        }
     }
     
     
-    // create a view with a "right callout accessory view".
-    //    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
-    //
-    //        let reuseId = "pin"
-    //        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
-    //
-    //        if pinView == nil {
-    //            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-    //            pinView!.canShowCallout = false
-    //            pinView!.animatesDrop = true
-    //            pinView!.draggable = false
-    //            //pinView!.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
-    //        }
-    //        else {
-    //            pinView!.annotation = annotation
-    //        }
-    //
-    //        return pinView
-    //    }
     
+    //create a view with a "right callout accessory view".
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        
+        let reuseId = "pin"
+        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
+        
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            pinView!.canShowCallout = false
+            
+            if self.editButton.title == const.done {
+                pinView!.animatesDrop = false
+            } else {
+                pinView!.animatesDrop = true
+            }
+            pinView!.draggable = false
+        }
+        else {
+            pinView!.annotation = annotation
+        }
+        
+        return pinView
+    }
+    
+    //MARK: addAnnotation - Create map annaotation & get photos
     func addAnnotation(gestureRecognizer:UIGestureRecognizer){
         
-        if gestureRecognizer.state == UIGestureRecognizerState.Began {
+        // Do not add pins when in delete mode
+        if self.editButton.title == const.edit {
             
-            // get referance to long press coords
-            let touchPoint = gestureRecognizer.locationInView(mapView)
-            let newCoordinates = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
-            let annotation = MKPointAnnotation()
-            
-            // add the annotation to map
-            annotation.coordinate = newCoordinates
-            mapView.addAnnotation(annotation)
-            
-            // get images for location
-            selectedLocation = Location(coordiante: annotation.coordinate, context: sharedContext)
-            
-            if !isDuplicateLocation(selectedLocation, toBeDeleted: true) {
-                fetchPhotosForLocation( selectedLocation )
+            if gestureRecognizer.state == UIGestureRecognizerState.Ended {
+                
+                // get referance to long press coords
+                let touchPoint = gestureRecognizer.locationInView(mapView)
+                let newCoordinates = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
+                let annotation = MKPointAnnotation()
+                
+                // add the annotation to map
+                annotation.coordinate = newCoordinates
+                mapView.addAnnotation(annotation)
+                
+                // If the location is not stored in core data then store it
+                // else don't do anything with it
+                if isDuplicateLocation(newCoordinates ) == false {
+                    print("added location \(newCoordinates)")
+                    selectedLocation = Location(coordiante: newCoordinates, context: sharedContext)
+                    fetchPhotosForLocation( selectedLocation )
+                    CoreDataStackManager.sharedInstance().saveContext()
+                }
             }
-            
         }
     }
     
@@ -196,7 +209,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
         return results as! [Location]
     }
     
-    func isDuplicateLocation(location: Location, toBeDeleted: Bool = false ) -> Bool {
+    func isDuplicateLocation(coordinate: CLLocationCoordinate2D) -> Bool {
         
         var error: NSError!
         
@@ -223,42 +236,84 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate {
         var locationCounted = 0
         if !results!.isEmpty {
             for x in locationResults {
-                if x.latitude == location.latitude && x.longitude == x.longitude {
+                if x.latitude == coordinate.latitude && x.longitude == coordinate.longitude {
                     locationCounted = locationCounted + 1
-                                    }
-            }
-            if locationCounted > 1 {
-//                if toBeDeleted == true {
-//                    print("Deleted \(x)")
-//                    sharedContext.deleteObject(x)
-//                }
-
-                return true
+                    return true
+                }
             }
         }
         print("Location is new")
         return false
     }
     
-    func fetchPhotosForLocation(location: Location) {
-        FlickrClient.sharedInstance().getImagesByLocation(location.latitude, long: location.longitude)
-            {
-                success, error in
-                if success {
-                    
-                    // update last location for seque
-                    dispatch_async(dispatch_get_main_queue(), {
-                        //CoreDataStackManager.sharedInstance().saveContext()
-                    })
-                    
-                } else {
-                    
-                    dispatch_async(dispatch_get_main_queue(), {
-                        print( error?.localizedDescription )
-                        displayError(self, errorString: error?.localizedDescription)
-                    })
+    func removeDuplicateLocations(location: Location) -> Int? {
+        
+        var error: NSError!
+        
+        let results: [AnyObject]?
+        let fetchRequest = NSFetchRequest(entityName: Location.Keys.location)
+        
+        do {
+            results = try sharedContext.executeFetchRequest(fetchRequest)
+        } catch error as NSError {
+            
+            results = nil
+        } catch _ {
+            results = nil
+        }
+        
+        if error != nil {
+            displayError(self, errorString: "fetch failed")
+        }
+        
+        guard let locationResults = results as? [Location] else {
+            return nil
+        }
+        
+        var locationCounted = 0
+        if !results!.isEmpty {
+            for x in locationResults {
+                if x.latitude == location.latitude && x.longitude == x.longitude {
+                    locationCounted = locationCounted + 1
+                    sharedContext.deleteObject(x)
                 }
+            }
+        }
+        return locationCounted
+    }
+    
+    
+    func fetchPhotosForLocation(location: Location) {
+        FlickrClient.sharedInstance().getImageUrlsByLocation(location.latitude, long: location.longitude) {
+            result, error in
+            if result == nil {
+                print("fetchPhotosForLocations returned nil")
+                return
+            }
+            
+            //Parse the array of movies dictionaries
+            
+            let _ = result.map() { (var dictionary: [String : AnyObject]) -> Photo in
+                // 1 - dictionary[Photo.Keys.location] = location // add location data to dict
+                let photo = Photo(dictionary: dictionary, context: self.sharedContext)
+                
+                photo.location = location // use coredata relationship instead of // 1
+                //location.photos.addObject(photo)
+                //photo.image =
+                FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
+                    success, imageData, error in
+                    if success != true {
+                        print("error extracting " + photo.url!)
+                    } else {
+                        photo.saveImage(UIImage(data: imageData!))
+                    }
+                })
+            
+                return photo
+            }
         }
     }
 }
+
+
 

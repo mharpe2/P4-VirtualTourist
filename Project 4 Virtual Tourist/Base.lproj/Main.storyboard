@@ -75,15 +75,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Uve-5Q-EfZ">
-                                <rect key="frame" x="0.0" y="64" width="600" height="172"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="172" id="170-0e-z4e"/>
-                                </constraints>
-                                <connections>
-                                    <outlet property="delegate" destination="axU-pb-eVK" id="t1Z-KO-yDB"/>
-                                </connections>
-                            </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="pac-Xx-U2E">
                                 <rect key="frame" x="0.0" y="244" width="600" height="312"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="r1M-M1-2fP">
@@ -94,7 +85,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" restorationIdentifier="photoCell" reuseIdentifier="photoCell" id="ZyV-WN-zJF" customClass="PhotoCell" customModule="Project_4_Virtual_Tourist" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="82" height="90"/>
+                                        <rect key="frame" x="0.0" y="64" width="82" height="90"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="82" height="90"/>
@@ -122,6 +113,15 @@
                                     <outlet property="delegate" destination="axU-pb-eVK" id="xuI-P6-Adw"/>
                                 </connections>
                             </collectionView>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Uve-5Q-EfZ">
+                                <rect key="frame" x="0.0" y="64" width="600" height="172"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="172" id="170-0e-z4e"/>
+                                </constraints>
+                                <connections>
+                                    <outlet property="delegate" destination="axU-pb-eVK" id="t1Z-KO-yDB"/>
+                                </connections>
+                            </mapView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -136,7 +136,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="LSi-gV-3TH"/>
                     <connections>
-                        <outlet property="colletionView" destination="pac-Xx-U2E" id="Yh8-xp-L1r"/>
+                        <outlet property="collectionView" destination="pac-Xx-U2E" id="u72-ZZ-oD5"/>
                         <outlet property="layout" destination="r1M-M1-2fP" id="KKJ-Ui-fKj"/>
                         <outlet property="mapView" destination="Uve-5Q-EfZ" id="kNM-b5-UqF"/>
                     </connections>

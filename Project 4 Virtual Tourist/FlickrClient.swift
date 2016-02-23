@@ -13,35 +13,22 @@ import CoreData
 
 class FlickrClient: NSObject {
     
+     typealias CompletionHander = (result: AnyObject!, error: NSError?) -> Void
+    
     // Session
     var session: NSURLSession!
     var foundPhotos: [Photo]   = []
     
-    // MARK: - Shared Instance
-    class func sharedInstance() -> FlickrClient {
-        struct Singleton {
-            static var sharedInstance = FlickrClient()
-        }
-        return Singleton.sharedInstance
-    }
-    
-    // CoreData
-    lazy var sharedContext = {
-        CoreDataStackManager.sharedInstance().managedObjectContext
-    }()
-
     override init() {
-        super.init()
         session = NSURLSession.sharedSession()
+        super.init()
     }
-    
-    struct Caches {
-        static let imageCache = ImageCache()
-    }
-    
-    func getImagesByLocation(lat: Double, long: Double, completionHandler: (success: Bool, error: NSError?) -> Void)
-    {
-            let methodArguments: [String: AnyObject] = [
+
+    // download a list of image urls assocatiated with a location
+    func getImageUrlsByLocation(lat: Double, long: Double,
+        completionHandler: (result: [[String: AnyObject]]!, error: NSError?) -> Void ) {
+
+        let methodArguments: [String: AnyObject] = [
             methodParameters.method: const.PHOTO_SEARCH,
             methodParameters.api_key: const.API_KEY,
             methodParameters.extras: const.EXTRAS,
@@ -52,14 +39,12 @@ class FlickrClient: NSObject {
             methodParameters.page: 1,
             methodParameters.perPage: 21
         ]
-        //TODO:
-        print("methodargs \(methodArguments.count)")
         
         self.taskForGETMethod(methodArguments){ JSONResult, error in
             
             guard error == nil else {
                 print(error)
-                completionHandler(success: false, error: error)
+                completionHandler(result: nil, error: error)
                 return
             }
             
@@ -68,24 +53,8 @@ class FlickrClient: NSObject {
                 let errorText = "Cant find key 'photo' in photosDictionary"
                 print("\(errorText)")
                 
-                if let dict = JSONResult as? NSDictionary {
-                    for x in dict {
-                        print(x)
-                    }
-                }
-                
                 let dataError = NSError(domain: domainText, code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
-                //FlickrClient.errorForData(data: nil, response: jsonResponse, error: dataError)
-                
-                completionHandler(success: false, error: dataError)
-                return
-            }
-            
-            guard let photoArray = photosDictionary.valueForKey(jsonResponse.photo) as? [[String: AnyObject]] else {
-                let errorText = "Cant find key 'photo' in photosDictionary"
-                print("\(errorText)")
-                let dataError = NSError(domain: domainText, code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
-                completionHandler(success: false, error: dataError)
+                completionHandler(result: nil, error: dataError)
                 return
             }
             
@@ -93,54 +62,22 @@ class FlickrClient: NSObject {
                 let errorText = "Cant find key number of pages"
                 print("\(errorText)")
                 let dataError = NSError(domain: domainText, code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
-                completionHandler(success: false, error: dataError)
+                completionHandler(result: nil, error: dataError)
                 return
             }
-            
-            for photo in photoArray {
-                
-                let photoUrl = photo[jsonResponse.imageType] as! String
-                //TODO: remove prints
-                print("\(photoUrl)" )
-                
-                self.taskForGETImage(photoUrl, completionHandler: {
-                    success, imageData, error in
-                    
-                    if success != true {
-                        print("error extracting " + photoUrl )
-                    } else {
-                        
-                        let cord = CLLocationCoordinate2D(latitude: lat, longitude: long)
-                        if let imageData = imageData {
-                            let image = UIImage(data: imageData)
-                            print("\(image?.description)")
-                            let location = Location(coordiante: cord, context: self.sharedContext)
-                            
-                            // Make photo dictionary for creation of nsmanaed object
-                            let filename = self.getLastPathComponent(photoUrl)
-                            print( filename )
 
-                            let dict = [Photo.Keys.url : photoUrl, Photo.Keys.location : location, Photo.Keys.path : filename]
-                            let p = Photo(dictionary: dict, context: self.sharedContext)
-                            p.image = image
-                            
-                            dispatch_async(dispatch_get_main_queue(), {
-                                CoreDataStackManager.sharedInstance().saveContext()
-                            })
-                        } else {
-                          print("image empty")
-                            completionHandler(success: false, error: nil)
-                        }
-                        
-                    }
-                }) // endTaskGetImage
-            } // end for
-        } // endTaskForGetMethod
+            guard let photoArray = photosDictionary.valueForKey(jsonResponse.photo) as? [[String: AnyObject]] else {
+                let errorText = "Cant find key 'photo' in photosDictionary"
+                print("\(errorText)")
+                let dataError = NSError(domain: domainText, code: 0, userInfo: [NSLocalizedDescriptionKey : errorText])
+                completionHandler(result: nil, error: dataError)
+                return
+            }
+            completionHandler(result: photoArray, error: nil)
+        }
         
-        completionHandler(success: true, error: nil)
     }
-    
-    
+ 
     //MARK: General networking funcs
     
     func taskForGETMethod(parameters: [String : AnyObject], completionHandler: (result: AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask {
@@ -179,17 +116,14 @@ class FlickrClient: NSObject {
     
     func taskForGETImage(filePath: String, completionHandler: (success: Bool, imageData: NSData?, error: NSError?) ->  Void) -> NSURLSessionTask {
         
-        /* 1. Set the parameters */
-        // There are none...
-        print("taskForGETImage")
-        
-        /* 2/3. Build the URL and configure the request */
+        // Set the parameters
+        // 2/3. Build the URL and configure the request */
         let request =  NSMutableURLRequest(URL: NSURL(string: filePath)!)
         
-        /* 4. Make the request */
+        // 4. Make the request */
         let task = session.dataTaskWithRequest(request) {data, response, downloadError in
             
-            /* 5/6. Parse the data and use the data (happens in completion handler) */
+            // 5/6. Parse the data and use the data (happens in completion handler)
             guard  downloadError == nil else {
                 let newError = FlickrClient.errorForData(data, response: response, error: downloadError!)
                 
@@ -202,15 +136,13 @@ class FlickrClient: NSObject {
             completionHandler(success: true, imageData: data, error: nil)
         }
         
-        /* 7. Start the request */
+        //  Start the request
         task.resume()
         return task
     }
     
-    //----------------------------------------------------------------------------------------------------
-    // MARK: - Helpers
+   // MARK: - Helpers
     
-    /* Helper: Given a response with error, see if a status_message is returned, otherwise return the previous error */
     class func errorForData(data: NSData?, response: NSURLResponse?, error: NSError) -> NSError {
         
         if data == nil {
@@ -245,7 +177,8 @@ class FlickrClient: NSObject {
         return error
     }
     
-    /* Helper: Given raw JSON, return a usable Foundation object */
+    // Helper: Given raw JSON, return a usable Foundation object
+    
     class func parseJSONWithCompletionHandler(data: NSData, completionHandler: (result: AnyObject!, error: NSError?) -> Void) {
         
         var parsedResult: AnyObject? = nil
@@ -301,8 +234,21 @@ class FlickrClient: NSObject {
     func getLastPathComponent(fullPath: String) -> String {
         return ( fullPath as NSString).lastPathComponent
     }
-
     
+    // MARK: - Shared Image Cache
+    
+    struct Caches {
+        static let imageCache = ImageCache()
+    }
+
+    // MARK: - Shared Instance
+    
+    class func sharedInstance() -> FlickrClient {
+        struct Singleton {
+            static var sharedInstance = FlickrClient()
+        }
+        return Singleton.sharedInstance
+    }
 }
 
 

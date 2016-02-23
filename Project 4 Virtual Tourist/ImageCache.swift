@@ -3,10 +3,6 @@
 //  Virtual Tourist
 //
 //  ** from FavoriteActors
-//  Created by Jason on 1/31/15.
-//  Copyright (c) 2015 Udacity. All rights reserved.
-//
-//
 
 import UIKit
 
@@ -45,7 +41,6 @@ class ImageCache {
         
         // If the image is nil, remove images from the cache
         if image == nil {
-            print("StoreImage: image is nil")
             inMemoryCache.removeObjectForKey(path)
             
             do {
@@ -56,7 +51,6 @@ class ImageCache {
         }
         
         // Otherwise, keep the image in memory
-        print("StoreImage: \(identifier)")
         inMemoryCache.setObject(image!, forKey: path)
         
         // And in documents directory
