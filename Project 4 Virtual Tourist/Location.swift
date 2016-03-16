@@ -13,11 +13,16 @@ class Location: NSManagedObject, MKAnnotation{
     
     @NSManaged var latitude: Double
     @NSManaged var longitude: Double
-    @NSManaged var photos: [Photo]
+    @NSManaged var geohash: String
+    @NSManaged var photos: NSMutableOrderedSet
+    @NSManaged var numberOfPages: NSNumber?
     
     
     struct Keys {
         static let location = "Location"
+        static let longitude = "longitude"
+        static let latitude = "latitude"
+        static let numPages = "numberOfPages"
     }
     
     // conform to MKAnnotation
@@ -32,13 +37,6 @@ class Location: NSManagedObject, MKAnnotation{
         }
     }
     
-    override var hashValue: Int {
-        get {
-            return latitude.hashValue ^ longitude.hashValue
-        }
-    }
-    
-    
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
@@ -51,13 +49,48 @@ class Location: NSManagedObject, MKAnnotation{
         
         longitude = coordiante.longitude
         latitude = coordiante.latitude
+        geohash = Geohash.encode(latitude: latitude, longitude: longitude)
+        self.photos = NSMutableOrderedSet()
+        
+        if (latitude == 0 && longitude == 0) {
+            print("created bad location")
+        }
+
+
+    }
+    
+    init(dictionary: [String : AnyObject], context: NSManagedObjectContext) {
+        
+        let entity = NSEntityDescription.entityForName(Keys.location, inManagedObjectContext: context)!
+        super.init(entity: entity, insertIntoManagedObjectContext: context)
+        
+        if let lat = dictionary[Keys.latitude] as! Double? {
+            if let long = dictionary[Keys.longitude] as! Double? {
+                latitude = lat
+                longitude = long
+                geohash = Geohash.encode(latitude: latitude, longitude: longitude)
+            }
+            if (latitude == 0 && longitude == 0) {
+                print("created bad location")
+            }
+        }
+        numberOfPages = dictionary[Keys.numPages] as? NSNumber
+        self.photos = NSMutableOrderedSet()
+
+        
+    }
+    
+    //MARK: override DESCRIPTION
+    override var description: String {
+        return String("Location: \(latitude), \(longitude), \(geohash), \(numberOfPages)")
     }
     
 }
 
 //MARK: == Operator
 // isEqual
-//func ==(lhs: Location, rhs: Location) -> Bool {
-//    
-//    return ( (lhs.longitude == rhs.longitude) && (lhs.latitude == rhs.latitude))
-//}
+func ==(lhs: Location, rhs: Location) -> Bool {
+    
+    //return ( (lhs.longitude == rhs.longitude) && (lhs.latitude == rhs.latitude))
+    return (lhs.geohash == rhs.geohash)
+}

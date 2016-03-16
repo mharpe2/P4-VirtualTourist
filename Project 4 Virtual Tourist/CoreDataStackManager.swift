@@ -9,13 +9,6 @@
 import Foundation
 import CoreData
 
-/**
- * The CoreDataStackManager contains the code that was previously living in the 
- * AppDelegate in Lesson 3. Apple puts the code in the AppDelegate in many of their
- * Xcode templates. But they put it in a convenience class like this in sample code
- * like the "Earthquakes" project.
- *
- */
 
 private let SQLITE_FILE_NAME = "Model.sqlite"
 
@@ -50,31 +43,12 @@ class CoreDataStackManager {
         // The managed object model for the application. This property is not optional. It is a fatal error for the application not to be able to find and load its model.
 
         print("Instantiating the managedObjectModel property")
-        
-        
-        
+    
         let modelURL = NSBundle.mainBundle().URLForResource("Model", withExtension: "momd")!
         return NSManagedObjectModel(contentsOfURL: modelURL)!
     }()
     
     
-    //MARK: Delete later
-//    func listFilesFromDocumentsFolder() -> [String]
-//    {
-//        var theError = NSErrorPointer()
-//        let dirs = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true) as? [String]
-//        if dirs != nil {
-//            let dir = dirs![0]
-//            let fileList = try NSFileManager.defaultManager().contentsOfDirectoryAtPath(dir)
-//            catch _ {
-//                
-//            }
-//            return fileList as! [String]   // edit: added ! for Swift 1.2 compatibitily
-//        }else{
-//            let fileList = [""]
-//            return fileList
-//        }
-//    }
     
     /**
      * The Persistent Store Coordinator is an object that the Context uses to interact with the underlying file system. Usually
@@ -120,7 +94,7 @@ class CoreDataStackManager {
     }()
     
     
-    lazy var managedObjectContext: NSManagedObjectContext = {
+    lazy var managedObjectContext: NSManagedObjectContext? = {
         // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.) This property is optional since there are legitimate error conditions that could cause the creation of the context to fail.
         let coordinator = self.persistentStoreCoordinator
         var managedObjectContext = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
@@ -129,22 +103,40 @@ class CoreDataStackManager {
         }()
     
     // MARK: - Core Data Saving support
-    
     func saveContext () {
-        if managedObjectContext.hasChanges {
-            do {
-                try managedObjectContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nserror = error as NSError
-                NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
-                abort()
+        if let moc = self.managedObjectContext {
+            var error: NSError? = nil
+            if moc.hasChanges {
+                do {
+                    try moc.save()
+                } catch let error1 as NSError {
+                    error = error1
+                    // Replace this implementation with code to handle the error appropriately.
+                    // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+                    NSLog("Unresolved error \(error), \(error!.userInfo)")
+                    abort()
+                }
             }
         }
     }
-    
 }
+    
+//    func saveContext () {
+//        
+//           if managedObjectContext.hasChanges {
+//            do {
+//                try managedObjectContext.save()
+//            } catch {
+//                // Replace this implementation with code to handle the error appropriately.
+//                // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//                let nserror = error as NSError
+//                NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
+//                abort()
+//            }
+//        }
+//    }
+    
+
 
 
 

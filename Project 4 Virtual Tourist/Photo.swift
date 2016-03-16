@@ -35,12 +35,13 @@ class Photo: NSManagedObject {
         let entity =  NSEntityDescription.entityForName(Keys.photo, inManagedObjectContext: context)!
         super.init(entity: entity,insertIntoManagedObjectContext: context)
         
+        
         // Dictionary
         url = (dictionary[Keys.url] as? String)!
-        location = (dictionary[Keys.location] as? Location)
+        location = Location(dictionary: dictionary, context: context)
         fileName = getLastPathComponent(url!) //generate filename
         title = (dictionary[Keys.title] as? String )
-    }
+         }
     
     
     func getImage() -> UIImage? {

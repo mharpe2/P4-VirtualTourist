@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="Igp-0b-j4B">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="Igp-0b-j4B">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -75,8 +75,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="pac-Xx-U2E">
-                                <rect key="frame" x="0.0" y="244" width="600" height="312"/>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Uve-5Q-EfZ">
+                                <rect key="frame" x="0.0" y="64" width="600" height="144"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="172" id="170-0e-z4e"/>
+                                </constraints>
+                                <connections>
+                                    <outlet property="delegate" destination="axU-pb-eVK" id="t1Z-KO-yDB"/>
+                                </connections>
+                            </mapView>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="pac-Xx-U2E">
+                                <rect key="frame" x="0.0" y="216" width="600" height="294"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="r1M-M1-2fP">
                                     <size key="itemSize" width="82" height="90"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -85,7 +94,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" restorationIdentifier="photoCell" reuseIdentifier="photoCell" id="ZyV-WN-zJF" customClass="PhotoCell" customModule="Project_4_Virtual_Tourist" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="64" width="82" height="90"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="82" height="90"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="82" height="90"/>
@@ -113,32 +122,36 @@
                                     <outlet property="delegate" destination="axU-pb-eVK" id="xuI-P6-Adw"/>
                                 </connections>
                             </collectionView>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Uve-5Q-EfZ">
-                                <rect key="frame" x="0.0" y="64" width="600" height="172"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="172" id="170-0e-z4e"/>
-                                </constraints>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AQ7-MO-09Y">
+                                <rect key="frame" x="0.0" y="518" width="600" height="30"/>
+                                <state key="normal" title="New Collection"/>
                                 <connections>
-                                    <outlet property="delegate" destination="axU-pb-eVK" id="t1Z-KO-yDB"/>
+                                    <action selector="newCollectionButtonTapped:" destination="axU-pb-eVK" eventType="touchUpInside" id="9Fv-xa-70j"/>
                                 </connections>
-                            </mapView>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="Uve-5Q-EfZ" firstAttribute="top" secondItem="ph2-WP-q47" secondAttribute="bottom" id="0VZ-BW-KZl"/>
+                            <constraint firstItem="QVv-8e-rg2" firstAttribute="top" secondItem="AQ7-MO-09Y" secondAttribute="bottom" constant="8" id="6Mg-5Q-T3n"/>
                             <constraint firstItem="Uve-5Q-EfZ" firstAttribute="leading" secondItem="unK-YJ-0sx" secondAttribute="leadingMargin" constant="-20" id="MGD-Ei-5LO"/>
-                            <constraint firstItem="pac-Xx-U2E" firstAttribute="bottom" secondItem="QVv-8e-rg2" secondAttribute="top" id="bUc-Y5-QhG"/>
+                            <constraint firstItem="pac-Xx-U2E" firstAttribute="bottom" secondItem="QVv-8e-rg2" secondAttribute="top" constant="-46" id="bUc-Y5-QhG"/>
                             <constraint firstItem="pac-Xx-U2E" firstAttribute="top" secondItem="Uve-5Q-EfZ" secondAttribute="bottom" constant="8" symbolic="YES" id="ffj-zQ-fa1"/>
+                            <constraint firstItem="AQ7-MO-09Y" firstAttribute="top" secondItem="pac-Xx-U2E" secondAttribute="bottom" constant="8" id="g2q-1N-8La"/>
                             <constraint firstItem="pac-Xx-U2E" firstAttribute="trailing" secondItem="Uve-5Q-EfZ" secondAttribute="trailing" id="mqY-HU-Me9"/>
                             <constraint firstItem="pac-Xx-U2E" firstAttribute="leading" secondItem="Uve-5Q-EfZ" secondAttribute="leading" id="oob-zO-fbK"/>
+                            <constraint firstItem="AQ7-MO-09Y" firstAttribute="leading" secondItem="unK-YJ-0sx" secondAttribute="leadingMargin" constant="-20" id="vE9-I0-hrz"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="AQ7-MO-09Y" secondAttribute="trailing" constant="-20" id="x4c-se-WpO"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Uve-5Q-EfZ" secondAttribute="trailing" constant="-20" id="x6S-pk-w4J"/>
                         </constraints>
                     </view>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" id="LSi-gV-3TH"/>
                     <connections>
                         <outlet property="collectionView" destination="pac-Xx-U2E" id="u72-ZZ-oD5"/>
                         <outlet property="layout" destination="r1M-M1-2fP" id="KKJ-Ui-fKj"/>
                         <outlet property="mapView" destination="Uve-5Q-EfZ" id="kNM-b5-UqF"/>
+                        <outlet property="newCollection" destination="AQ7-MO-09Y" id="lPB-e9-HeD"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jrl-hN-DB2" userLabel="First Responder" sceneMemberID="firstResponder"/>
