@@ -58,12 +58,9 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        // Set the temporary context
-//        temporaryContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.MainQueueConcurrencyType)
-//        temporaryContext.persistentStoreCoordinator = sharedContext().persistentStoreCoordinator
     
         //Mark: UI - Custom Navigation buttons
-        editButton = UIBarButtonItem(title: const.edit, style: .Plain, target: self, action: "editButtonPressed:")
+        editButton = UIBarButtonItem(title: const.edit, style: .Plain, target: self, action: #selector(TravelLocationsMapVC.editButtonPressed(_:)))
         
         let rightButtons = [editButton!]
         self.navigationItem.rightBarButtonItems = rightButtons
@@ -108,11 +105,14 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
             removeDuplicateLocations(pin)
             mapView.removeAnnotation(pin)
             CoreDataStackManager.sharedInstance().saveContext()
-           } else {
+           }
+        
+            // else view photoalbums
+        else {
             
             // get last selected location
             let thisLocation = view.annotation as! Location
-            //fetchPhotosForLocation(self.selectedLocation)
+            //let photoSet = fetchPhotosForLocation(self.selectedLocation)
             
             // get PhotoAlbumsView controller
             let photoAlbumsVC = self.storyboard?.instantiateViewControllerWithIdentifier("photoAlbums") as! PhotoAlbumsVC
@@ -177,8 +177,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
             case .Ended:
                 
                 // save in completion handler??????
-                let photoSet = FlickrClient.sharedInstance().fetchPhotosForLocation(locationToBeAdded!)
-                locationToBeAdded?.photos = photoSet
+                FlickrClient.sharedInstance().fetchPhotosForLocation(locationToBeAdded!) { }
                 CoreDataStackManager.sharedInstance().saveContext()
                 print("count = \(self.fetchLocations().count)")
                 

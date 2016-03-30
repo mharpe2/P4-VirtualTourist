@@ -76,8 +76,6 @@ class Location: NSManagedObject, MKAnnotation{
         }
         numberOfPages = dictionary[Keys.numPages] as? NSNumber
         self.photos = NSMutableOrderedSet()
-
-        
     }
     
     //MARK: override DESCRIPTION

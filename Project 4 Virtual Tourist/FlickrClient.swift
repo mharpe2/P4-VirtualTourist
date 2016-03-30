@@ -17,7 +17,7 @@ class FlickrClient: NSObject {
     var sharedContext = {
         return CoreDataStackManager.sharedInstance().managedObjectContext!
     }
-
+    
     
     // Session
     var session: NSURLSession!
@@ -27,19 +27,23 @@ class FlickrClient: NSObject {
         session = NSURLSession.sharedSession()
         super.init()
     }
-
+    
     // download a list of image urls assocatiated with a location
     func getImageUrlsByLocation(location: Location,
-        completionHandler: (result: [[String: AnyObject]]!, error: NSError?, numPages: Int?) -> Void ) {
-
-            var randomPage = 1
-            let numPages = location.numberOfPages as! Int
+                                completionHandler: (result: [[String: AnyObject]]!, error: NSError?, numPages: Int?) -> Void ) {
+        
+        print("numpages: \(location.numberOfPages)")
+        var randomPage = 1
+        if let numPages = location.numberOfPages as? Int {
             if numPages > 1 {
+                
                 randomPage = Int(arc4random_uniform(UInt32(numPages)))
+                print("random page = \(randomPage)")
             }
-
-            
-            let methodArguments: [String: AnyObject] = [
+        }
+        
+        
+        let methodArguments: [String: AnyObject] = [
             methodParameters.method: const.PHOTO_SEARCH,
             methodParameters.api_key: const.API_KEY,
             methodParameters.extras: const.EXTRAS,
@@ -76,7 +80,7 @@ class FlickrClient: NSObject {
                 completionHandler(result: nil, error: dataError, numPages: nil)
                 return
             }
-
+            
             guard let photoArray = photosDictionary.valueForKey(jsonResponse.photo) as? [[String: AnyObject]] else {
                 let errorText = "Cant find key 'photo' in photosDictionary"
                 print("\(errorText)")
@@ -90,7 +94,7 @@ class FlickrClient: NSObject {
         }
         
     }
- 
+    
     //MARK: General networking funcs
     
     func taskForGETMethod(parameters: [String : AnyObject], completionHandler: (result: AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask {
@@ -140,7 +144,7 @@ class FlickrClient: NSObject {
             guard  downloadError == nil else {
                 let newError = FlickrClient.errorForData(data, response: response, error: downloadError!)
                 
-               // print( response?.description)
+                // print( response?.description)
                 completionHandler(success: false, imageData: nil, error: newError)
                 return
             }
@@ -154,7 +158,7 @@ class FlickrClient: NSObject {
         return task
     }
     
-   // MARK: - Helpers
+    // MARK: - Helpers
     
     class func errorForData(data: NSData?, response: NSURLResponse?, error: NSError) -> NSError {
         
@@ -253,7 +257,7 @@ class FlickrClient: NSObject {
     struct Caches {
         static let imageCache = ImageCache()
     }
-
+    
     // MARK: - Shared Instance
     
     class func sharedInstance() -> FlickrClient {
@@ -263,64 +267,56 @@ class FlickrClient: NSObject {
         return Singleton.sharedInstance
     }
     
-    func fetchPhotosForLocation(location: Location) -> NSMutableOrderedSet{
+    func fetchPhotosForLocation(location: Location, completionHandler: ((Void) -> (Void)) ) {
         print("fetchPhotosForLocation \(location)")
         
-        var photoSet = NSMutableOrderedSet()
-        
-        
-            FlickrClient.sharedInstance().getImageUrlsByLocation(location) {
+        FlickrClient.sharedInstance().getImageUrlsByLocation(location) {
             result, error, numPages in
             if result == nil {
                 print("fetchPhotosForLocations returned nil")
                 return
             }
             
-            //Parse the array of photo dictionaries
-            //for entry in result {
+            
+            let photo = result.map() { (var dictionary: [String : AnyObject]) -> Photo in
+                // 1 - dictionary[Photo.Keys.location] = location // add location data to dict
+                let photo = Photo(dictionary: dictionary, context: self.sharedContext())
+                photo.location = location
+                location.photos.addObject(photo)
                 
-                //var picture = entry
-                //append location data to result
-                //picture.location = location
-                //picture[ Location.Keys.longitude] = location.longitude
-                //picture[ Location.Keys.latitude] = location.latitude
+                print("Location \(photo.location)")
+                //CoreDataStackManager.sharedInstance().saveContext()
                 
-                let photo = result.map() { (var dictionary: [String : AnyObject]) -> Photo in
-                    // 1 - dictionary[Photo.Keys.location] = location // add location data to dict
-                    let photo = Photo(dictionary: dictionary, context: self.sharedContext())
-                    photo.location = location
-                    //location.photos.addObject(photo)
-                    photoSet.addObject(photo)
-                    
-                    
-                    print("Location \(photo.location)")
-                    CoreDataStackManager.sharedInstance().saveContext()
-                    
-                    FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
-                        success, imageData, error in
-                        if success != true {
-                            print("error extracting " + photo.url!)
-                        } else {
-                            //dispatch_async(dispatch_get_main_queue()) {
+                FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
+                    success, imageData, error in
+                    if success != true {
+                        print("error extracting " + photo.url!)
+                    } else {
+                        dispatch_async(dispatch_get_main_queue()) {
                             photo.saveImage(UIImage(data: imageData!))
                             print("saved \(photo.location)" )
                             CoreDataStackManager.sharedInstance().saveContext()
-                            //} //end dispatch
-                        }
-                    }) // end taskForGetImage
-                    
-                    //photo.location = location
-                    //print("2nd Location \(photo.location)")
-                    //CoreDataStackManager.sharedInstance().saveContext()
-                    return photo
-                } // end result.map()
-                
-            //}
+                        } //end dispatch
+                    }
+                }) // end taskForGetImage
+                return photo
+            } // end result.map()
+            
         }
-        
-        return photoSet
     }
-
+    
+    func downloadImage(photo: Photo) {
+        FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
+            success, imageData, error in
+            if success != true {
+                print("error extracting " + photo.url!)
+            } else {
+                photo.saveImage(UIImage(data: imageData!))
+                print("saved \(photo.location)" )
+                CoreDataStackManager.sharedInstance().saveContext()
+            }
+        }) // end taskForGetImage
+    }
 }
 
 

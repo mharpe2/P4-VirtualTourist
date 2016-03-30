@@ -1,6 +1,6 @@
 //
 //  UICommon.swift
-//  P3_onTheMap
+//  Project 4 Virtual tourist
 //
 //  Created by Michael Harper on 10/7/15.
 //  Copyright © 2015 hxx. All rights reserved.

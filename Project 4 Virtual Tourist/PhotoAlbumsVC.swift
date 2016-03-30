@@ -10,15 +10,18 @@ import UIKit
 import MapKit
 import CoreData
 
+
 class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
     
     @IBOutlet weak var newCollection: UIButton!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var layout: UICollectionViewFlowLayout!
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var noImagesForThisLocationLabel: UILabel!
+    
+    
     var oKButton: UIBarButtonItem!
     var selectedLocation: Location!
-    var temporaryContext: NSManagedObjectContext!
     
     // The selected indexes array keeps all of the indexPaths for cells that are "selected". The array is
     // used inside cellForItemAtIndexPath to lower the alpha of selected cells.  You can see how the array
@@ -29,14 +32,11 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     var insertedIndexPaths: [NSIndexPath]!
     var deletedIndexPaths: [NSIndexPath]!
     var updatedIndexPaths: [NSIndexPath]!
-
     
     var sharedContext = {
         return CoreDataStackManager.sharedInstance().managedObjectContext
     }
     
-    
-
     // fetchedResultsController
     lazy var fetchedResultsController: NSFetchedResultsController = {
         
@@ -44,17 +44,15 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         
         let fetchRequest = NSFetchRequest(entityName: "Photo")
         fetchRequest.predicate = NSPredicate(format: "location == %@", self.selectedLocation)
-        //fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         fetchRequest.sortDescriptors = []
         
         //Create fetched results controller with the new fetch request.
         let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
-            managedObjectContext: self.sharedContext()!,
-            sectionNameKeyPath: nil,
-            cacheName: nil)
-        
+                                                                  managedObjectContext: self.sharedContext()!,
+                                                                  sectionNameKeyPath: nil,
+                                                                  cacheName: nil)
         fetchedResultsController.delegate = self
-
         return fetchedResultsController
     }()
     
@@ -63,18 +61,13 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Set the temporary context
-        temporaryContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.MainQueueConcurrencyType)
-        temporaryContext.persistentStoreCoordinator = sharedContext()!.persistentStoreCoordinator
-
-        
         //Delegates
         mapView.delegate = self
         collectionView.delegate = self
         collectionView.dataSource = self
         
         //Mark: UI - Custom Navigation buttons
-        oKButton = UIBarButtonItem(title: "Ok", style: .Plain, target: self, action: "oKButtonPressed:")
+        oKButton = UIBarButtonItem(title: "Ok", style: .Plain, target: self, action: #selector(PhotoAlbumsVC.oKButtonPressed(_:)))
         
         let leftButtons = [oKButton!]
         self.navigationItem.leftBarButtonItems = leftButtons
@@ -92,34 +85,15 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         }
         
         // Core Data
-        
-        do {
-            try fetchedResultsController.performFetch()
-        } catch {
-            print("Error performing fetch")
-        }
-        if fetchedResultsController.fetchedObjects?.count == 0{
-            newCollection.enabled = false
-        }
-        
-//        if selectedLocation.photos.count == 0 {
-//            // download photos
-//            print("Downloading photos")
-//           fetchPhotosForLocation(selectedLocation)
-//            // Update the table on the main thread
-            dispatch_async(dispatch_get_main_queue()) {
-            self.collectionView.reloadData()
-            }
-        
-        }
+        fetchResults()
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        // Lay out the collection view so that cells take up 1/3 of the width,
-        // with no space in between.
+        // Layout the collection view so that cells take up 1/3 of the width,
         let layout : UICollectionViewFlowLayout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        //layout.sectionInset = UIEdgeInsets(top: 50.0, left: 20.0, bottom: 50.0, right: 20.0)
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
         
@@ -127,20 +101,17 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         layout.itemSize = CGSize(width: width, height: width)
         collectionView.collectionViewLayout = layout
     }
-
+    
     
     //MARK: CollectionView
     
-    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return self.fetchedResultsController.sections?.count ?? 1
-       
-    }
-
-    
+    //MARK: CollectionView - numberOfItemsInSection
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let sectionInfo = self.fetchedResultsController.sections![section]
         
-        print("number Of Cells: \(sectionInfo.numberOfObjects)")
+        guard let sectionInfo = self.fetchedResultsController.sections?[section] else {
+            return 1
+        }
+        
         return sectionInfo.numberOfObjects
     }
     
@@ -152,23 +123,31 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(cellIdentifer, forIndexPath: indexPath) as! PhotoCell
         
         let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+        
+        // if photo already downloaded, display it
         if photo.getImage() != nil {
             
-            //cell.activityIndicatorView.stopAnimating()
-            cell.imageView.alpha = 0.0
-            cell.imageView.image = photo.getImage()
+            dispatch_async(dispatch_get_main_queue()) {
+                cell.activityIndicator.stopAnimating()
+                cell.imageView.alpha = 0.0
+                cell.imageView.image = photo.getImage()
+                UIView.animateWithDuration(0.5, animations: { cell.imageView.alpha = 1.0 })
+            }
             
-            UIView.animateWithDuration(0.2,
-                animations: { cell.imageView.alpha = 1.0 })
+        } else {
+            // try to download image
+            cell.activityIndicator.startAnimating()
+            downloadImageForPhoto(photo, photoCell: cell)
+            cell.activityIndicator.stopAnimating()
+            
         }
-
-    
-        // confiure cell
-        configureCell(cell, atIndexPath: indexPath)
+        
+        dispatch_async(dispatch_get_main_queue()) {
+            self.configureCell(cell, atIndexPath: indexPath)
+        }
         
         return cell
     }
-    
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         
@@ -182,46 +161,42 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         }
         
         // Then reconfigure the cell
-        configureCell(cell, atIndexPath: indexPath)
+        dispatch_async(dispatch_get_main_queue()) {
+            self.configureCell(cell, atIndexPath: indexPath)
+        }
+        
+        
+        // toggle collection view text
+        if selectedIndexes.count > 0 {
+            newCollection.setTitle("Tap to delete selected images", forState: .Normal)
+        }
+        else {
+            newCollection.setTitle("New Collection", forState: .Normal)
+        }
         
     }
-
+    
     //MARK: Collection View Helpers
     
-    //func configureCell(cell: PhotoCell, photo: Photo) {
-        func configureCell(cell: PhotoCell, atIndexPath indexPath: NSIndexPath) {
-//            
-//            let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-//            
-//            cell.imageView.image = photo.getImage()
-//            // If the cell is "selected" it's color panel is grayed out
-//            // we use the Swift `find` function to see if the indexPath is in the array
-//            
-//            if let index = selectedIndexes.indexOf(indexPath) {
-//                cell.alpha = 0.05
-//            } else {
-//                cell.alpha = 1.0
-//            }
-            //Grey cell out            
-            if let _ = selectedIndexes.indexOf(indexPath) {
-                UIView.animateWithDuration(0.1,
-                    animations: {
-                        cell.imageView.alpha = 0.5
-                })
-            } else {
-                
-                // Do not grew
-                UIView.animateWithDuration(0.1,
-                    animations: {
-                        cell.imageView.alpha = 1.0
-                })
-            }
-
+    func configureCell(cell: PhotoCell, atIndexPath indexPath: NSIndexPath) {
+        
+        let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+        cell.imageView.image = photo.getImage()
+        
+        //Grey cell out
+        if let _ = selectedIndexes.indexOf(indexPath) {
+            UIView.animateWithDuration(0.25, animations: { cell.imageView.alpha = 0.25 })
+        } else {
+            // otherwise do not grey
+            UIView.animateWithDuration(0.25, animations: { cell.imageView.alpha = 1.0})
         }
+    }
     
     // three fresh arrays to record the index paths that will be changed.
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
+        
         // We are about to handle some new changes. Start out with empty arrays for each change type
+        
         insertedIndexPaths = [NSIndexPath]()
         deletedIndexPaths = [NSIndexPath]()
         updatedIndexPaths = [NSIndexPath]()
@@ -229,34 +204,23 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         print("in controllerWillChangeContent")
     }
     
-    // The second method may be called multiple times, once for each Color object that is added, deleted, or changed.
-    // We store the incex paths into the three arrays.
+    
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-
         
         switch type{
             
         case .Insert:
             print("Insert an item")
             insertedIndexPaths.append(newIndexPath!)
-            break
         case .Delete:
             print("Delete an item")
             deletedIndexPaths.append(indexPath!)
-            break
         case .Update:
             print("Update an item.")
-            // We don't expect Color instances to change after they are created. But Core Data would
-            // notify us of changes if any occured. This can be useful if you want to respond to changes
-            // that come about after data is downloaded. For example, when an images is downloaded from
-            // Flickr in the Virtual Tourist app
             updatedIndexPaths.append(indexPath!)
-            break
-        case .Move:
-            print("Move an item. We don't expect to see this in this app.")
-            break
         default:
             break
+            
         }
     }
     
@@ -286,8 +250,8 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
             
             }, completion: nil)
     }
-
-
+    
+    
     // create a view with a "right callout accessory view".
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         
@@ -307,24 +271,89 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         return LocationView
     }
     
-    // delegate method is implemented to respond to taps. It opens the system browser
-    // to the URL specified in the annotationViews subtitle property.
-    func mapView(mapView: MKMapView, annotationView: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+    // fetch coredata results
+    func fetchResults() {
+        do {
+            try fetchedResultsController.performFetch()
+        } catch let error as NSError {
+            print("Error performing fetch")
+            displayError(self, errorString: error.localizedDescription)
+        }
+        if fetchedResultsController.fetchedObjects?.count == 0{
+            newCollection.enabled = false
+            noImagesForThisLocationLabel.hidden = false
+        } else {
+            newCollection.enabled = true
+            noImagesForThisLocationLabel.hidden = true
+        }
+        
     }
     
     func loadNewPhotos() {
-    
-        newCollection.enabled = false
-        print("Load new photos for \(selectedLocation)")
         
-        FlickrClient.sharedInstance().fetchPhotosForLocation(selectedLocation!)
-        //delete existing pictures
-        for picture in fetchedResultsController.fetchedObjects as! [Photo] {
-            sharedContext()?.deleteObject(picture)
+        newCollection.enabled = false
+        print("load new photos for location \(selectedLocation!)")
+        
+        // delete all photos
+        for photo in fetchedResultsController.fetchedObjects as! [Photo] {
+            
+            photo.deleteImage()
+            sharedContext()!.deleteObject(photo)
         }
-        CoreDataStackManager.sharedInstance().saveContext()
-        newCollection.enabled = true
+        
+        // remove all photos from location
+        selectedLocation.photos = NSMutableOrderedSet()
+        
+        //Download and display photos one by one
+        FlickrClient.sharedInstance().getImageUrlsByLocation(selectedLocation) {
+            result, error, numPages in
+            if result == nil {
+                displayError(self, errorString: "Loading new photos failed")
+                print("Loading new photos failed")
+                return
+            }
+            
+            let photo = result.map() { (var dictionary: [String : AnyObject]) -> Photo in
+                // 1 - dictionary[Photo.Keys.location] = location // add location data to dict
+                let photo = Photo(dictionary: dictionary, context: self.sharedContext()!)
+                photo.location = self.selectedLocation
+                self.selectedLocation.photos.addObject(photo)
+                
+                print("Location \(photo.location)")
+                CoreDataStackManager.sharedInstance().saveContext()
+                                return photo
+            } // end result.map()
+            
+            dispatch_async(dispatch_get_main_queue()) {
+                self.fetchResults()
+                self.collectionView.reloadData()
+            }
+
+        }
     }
+    
+    func downloadImageForPhoto(photo: Photo, photoCell: PhotoCell) {
+        FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
+            
+            success, imageData, error in
+            
+            if success != true {
+                displayError(self, errorString: "error extracting " + photo.url!)
+                print("error extracting " + photo.url!)
+            }
+            else {
+                photo.saveImage(UIImage(data: imageData!))
+                print("saved \(photo.location)" )
+                //CoreDataStackManager.sharedInstance().saveContext()
+                
+                dispatch_async(dispatch_get_main_queue()) {
+                    photoCell.imageView.image = photo.getImage()
+                } // end dispatch
+            } // end else
+        }) // end taskForGetImage
+    }
+
+    //MARK: Actions 
     
     @IBAction func oKButtonPressed(sender: AnyObject) {
         
@@ -333,18 +362,30 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     
     @IBAction func newCollectionButtonTapped(sender: AnyObject) {
         print("New Collection Button Pressed")
-        loadNewPhotos()
+        
+        // if nothing is selected, load a new set
+        if selectedIndexes.count == 0
+        {
+            loadNewPhotos()
+        }
+        else { // remove selceted photos from set
+            for item in selectedIndexes {
+                // delete the item from fetched results
+                sharedContext()?.deleteObject(fetchedResultsController.objectAtIndexPath(item) as! Photo)
+            }
+            // reset selected index
+            selectedIndexes = []
+            CoreDataStackManager.sharedInstance().saveContext()
+            
+            // newCollection button should always be "New Collection" after photos
+            // are removed
+            newCollection.setTitle("New Collection", forState: .Normal)
+            newCollection.enabled = true
+        }
+        
+        dispatch_async(dispatch_get_main_queue()) {
+            self.collectionView.reloadData()
+        }
     }
-//    func downloadImage(photo: Photo) {
-//        FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
-//            success, imageData, error in
-//            if success != true {
-//                print("error extracting " + photo.url!)
-//            } else {
-//                photo.saveImage(UIImage(data: imageData!)) //= UIImage(data: imageData!)
-//                self.collectionView.reloadData()
-//            }
-//        })
-//    }
 }
 

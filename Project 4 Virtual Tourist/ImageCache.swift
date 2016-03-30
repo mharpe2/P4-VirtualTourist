@@ -36,7 +36,7 @@ class ImageCache {
     
     // MARK: - Saving images
     
-    func storeImage(image: UIImage?, withIdentifier identifier: String) {
+    func storeImage(image: UIImage?, withIdentifier identifier: String) -> Bool {
         let path = pathForIdentifier(identifier)
         
         // If the image is nil, remove images from the cache
@@ -47,7 +47,7 @@ class ImageCache {
                 try NSFileManager.defaultManager().removeItemAtPath(path)
             } catch _ {}
             
-            return
+            return false
         }
         
         // Otherwise, keep the image in memory
@@ -56,6 +56,8 @@ class ImageCache {
         // And in documents directory
         let data = UIImagePNGRepresentation(image!)!
         data.writeToFile(path, atomically: true)
+        
+        return true
     }
     
     // MARK: - Helper

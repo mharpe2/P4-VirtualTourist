@@ -51,6 +51,16 @@ class Photo: NSManagedObject {
     func saveImage(image: UIImage?) {
         FlickrClient.Caches.imageCache.storeImage(image, withIdentifier: fileName!)
     }
+    
+    func deleteImage() -> Bool {
+        if FlickrClient.Caches.imageCache.storeImage(nil, withIdentifier: fileName!) == false {
+            //image was deleted
+            return true
+        }
+        
+        //image was not deleted
+        return false
+    }
      
     func getLastPathComponent(fullPath: String) -> String {
         return ( fullPath as NSString).lastPathComponent
