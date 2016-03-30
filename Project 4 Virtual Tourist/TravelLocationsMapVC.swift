@@ -215,6 +215,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     
     func removeDuplicateLocations(location: Location) -> Int? {
         
+       
         var error: NSError!
         
         let results: [AnyObject]?

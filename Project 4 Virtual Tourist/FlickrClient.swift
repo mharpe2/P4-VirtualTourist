@@ -278,7 +278,7 @@ class FlickrClient: NSObject {
             }
             
             
-            let photo = result.map() { (var dictionary: [String : AnyObject]) -> Photo in
+            _ = result.map() { ( dictionary: [String : AnyObject]) -> Photo in
                 // 1 - dictionary[Photo.Keys.location] = location // add location data to dict
                 let photo = Photo(dictionary: dictionary, context: self.sharedContext())
                 photo.location = location

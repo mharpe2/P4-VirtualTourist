@@ -105,7 +105,6 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     
     //MARK: CollectionView
     
-    //MARK: CollectionView - numberOfItemsInSection
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         
         guard let sectionInfo = self.fetchedResultsController.sections?[section] else {
@@ -137,9 +136,8 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         } else {
             // try to download image
             cell.activityIndicator.startAnimating()
-            downloadImageForPhoto(photo, photoCell: cell)
+            downloadImageForPhoto(photo, cell: cell)
             cell.activityIndicator.stopAnimating()
-            
         }
         
         dispatch_async(dispatch_get_main_queue()) {
@@ -181,7 +179,13 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     func configureCell(cell: PhotoCell, atIndexPath indexPath: NSIndexPath) {
         
         let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-        cell.imageView.image = photo.getImage()
+        if let image = photo.getImage() {
+            cell.imageView.image = image
+            cell.activityIndicator.stopAnimating()
+        } else {
+            cell.imageView.image = UIImage(named: "madmen")
+            cell.activityIndicator.startAnimating()
+        }
         
         //Grey cell out
         if let _ = selectedIndexes.indexOf(indexPath) {
@@ -251,6 +255,7 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
             }, completion: nil)
     }
     
+    //MARK: Mapview
     
     // create a view with a "right callout accessory view".
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
@@ -270,6 +275,8 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         
         return LocationView
     }
+    
+    //MARK: Utility Functions
     
     // fetch coredata results
     func fetchResults() {
@@ -304,35 +311,18 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         // remove all photos from location
         selectedLocation.photos = NSMutableOrderedSet()
         
-        //Download and display photos one by one
-        FlickrClient.sharedInstance().getImageUrlsByLocation(selectedLocation) {
-            result, error, numPages in
-            if result == nil {
-                displayError(self, errorString: "Loading new photos failed")
-                print("Loading new photos failed")
-                return
-            }
-            
-            let photo = result.map() { (var dictionary: [String : AnyObject]) -> Photo in
-                // 1 - dictionary[Photo.Keys.location] = location // add location data to dict
-                let photo = Photo(dictionary: dictionary, context: self.sharedContext()!)
-                photo.location = self.selectedLocation
-                self.selectedLocation.photos.addObject(photo)
-                
-                print("Location \(photo.location)")
-                CoreDataStackManager.sharedInstance().saveContext()
-                                return photo
-            } // end result.map()
-            
-            dispatch_async(dispatch_get_main_queue()) {
-                self.fetchResults()
-                self.collectionView.reloadData()
-            }
-
+        FlickrClient.sharedInstance().fetchPhotosForLocation(selectedLocation) {
+            // Code
+            print("Finished fetchPhotosForLocation")
         }
-    }
+        
+        collectionView.reloadData()
+        fetchResults()
+        newCollection.enabled = true
+        
+        }
     
-    func downloadImageForPhoto(photo: Photo, photoCell: PhotoCell) {
+    func downloadImageForPhoto(photo: Photo, cell: PhotoCell) {
         FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
             
             success, imageData, error in
@@ -347,7 +337,13 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
                 //CoreDataStackManager.sharedInstance().saveContext()
                 
                 dispatch_async(dispatch_get_main_queue()) {
-                    photoCell.imageView.image = photo.getImage()
+                    if let image = photo.getImage() {
+                        cell.imageView.image = image
+                        cell.activityIndicator.stopAnimating()
+                    } else {
+                        cell.imageView.image = UIImage(named: "madmen")
+                        cell.activityIndicator.startAnimating()
+                    }
                 } // end dispatch
             } // end else
         }) // end taskForGetImage

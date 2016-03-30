@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/Location.swift"
-            timestampString = "479782595.416773"
+            timestampString = "481048876.123303"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "68"
-            endingLineNumber = "68"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
             landmarkName = "init(dictionary:context:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -74,11 +74,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/TravelLocationsMapVC.swift"
-            timestampString = "480442991.789632"
+            timestampString = "480999459.254872"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "261"
-            endingLineNumber = "261"
+            startingLineNumber = "262"
+            endingLineNumber = "262"
             landmarkName = "doesLocationExist(_:longitude:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -122,11 +122,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/TravelLocationsMapVC.swift"
-            timestampString = "480442991.789632"
+            timestampString = "480999459.254872"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "238"
-            endingLineNumber = "238"
+            startingLineNumber = "239"
+            endingLineNumber = "239"
             landmarkName = "removeDuplicateLocations(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -186,11 +186,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/PhotoAlbumsVC.swift"
-            timestampString = "480997663.889453"
+            timestampString = "481050534.37666"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "159"
-            endingLineNumber = "159"
+            startingLineNumber = "157"
+            endingLineNumber = "157"
             landmarkName = "collectionView(_:didSelectItemAtIndexPath:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -202,11 +202,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/PhotoAlbumsVC.swift"
-            timestampString = "480997663.889453"
+            timestampString = "481050534.37666"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "294"
-            endingLineNumber = "294"
+            startingLineNumber = "301"
+            endingLineNumber = "301"
             landmarkName = "loadNewPhotos()"
             landmarkType = "5">
          </BreakpointContent>
@@ -234,59 +234,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/PhotoAlbumsVC.swift"
-            timestampString = "480997663.889453"
+            timestampString = "481051443.081766"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "316"
-            endingLineNumber = "316"
-            landmarkName = "loadNewPhotos()"
-            landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Project_4_Virtual_Tourist.PhotoAlbumsVC.(loadNewPhotos () -&gt; ()).(closure #1)"
-                  moduleName = "Project 4 Virtual Tourist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/michaelharper/projects/P4/Project%204%20Virtual%20Tourist/Project%204%20Virtual%20Tourist/PhotoAlbumsVC.swift"
-                  timestampString = "480998724.714825"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "316"
-                  endingLineNumber = "316"
-                  offsetFromSymbolStart = "432">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Project_4_Virtual_Tourist.PhotoAlbumsVC.(loadNewPhotos () -&gt; ()).(closure #1).(closure #1)"
-                  moduleName = "Project 4 Virtual Tourist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/michaelharper/projects/P4/Project%204%20Virtual%20Tourist/Project%204%20Virtual%20Tourist/PhotoAlbumsVC.swift"
-                  timestampString = "480998724.714945"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "318"
-                  endingLineNumber = "318"
-                  offsetFromSymbolStart = "30">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Project 4 Virtual Tourist/PhotoAlbumsVC.swift"
-            timestampString = "480998382.711447"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "369"
-            endingLineNumber = "369"
+            startingLineNumber = "365"
+            endingLineNumber = "365"
             landmarkName = "newCollectionButtonTapped(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -298,12 +250,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/PhotoAlbumsVC.swift"
-            timestampString = "480998717.470984"
+            timestampString = "481051443.081766"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "346"
-            endingLineNumber = "346"
-            landmarkName = "downloadImageForPhoto(_:photoCell:)"
+            startingLineNumber = "336"
+            endingLineNumber = "336"
+            landmarkName = "downloadImageForPhoto(_:cell:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -314,11 +266,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/PhotoAlbumsVC.swift"
-            timestampString = "480998924.405748"
+            timestampString = "481048876.123303"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "128"
-            endingLineNumber = "128"
+            startingLineNumber = "127"
+            endingLineNumber = "127"
             landmarkName = "collectionView(_:cellForItemAtIndexPath:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -330,11 +282,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/PhotoAlbumsVC.swift"
-            timestampString = "480998926.019987"
+            timestampString = "481048876.123303"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "137"
-            endingLineNumber = "137"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
             landmarkName = "collectionView(_:cellForItemAtIndexPath:)"
             landmarkType = "5">
          </BreakpointContent>

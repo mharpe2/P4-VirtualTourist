@@ -51,12 +51,6 @@ class Location: NSManagedObject, MKAnnotation{
         latitude = coordiante.latitude
         geohash = Geohash.encode(latitude: latitude, longitude: longitude)
         self.photos = NSMutableOrderedSet()
-        
-        if (latitude == 0 && longitude == 0) {
-            print("created bad location")
-        }
-
-
     }
     
     init(dictionary: [String : AnyObject], context: NSManagedObjectContext) {
@@ -69,9 +63,6 @@ class Location: NSManagedObject, MKAnnotation{
                 latitude = lat
                 longitude = long
                 geohash = Geohash.encode(latitude: latitude, longitude: longitude)
-            }
-            if (latitude == 0 && longitude == 0) {
-                print("created bad location")
             }
         }
         numberOfPages = dictionary[Keys.numPages] as? NSNumber
