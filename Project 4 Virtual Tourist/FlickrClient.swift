@@ -32,7 +32,7 @@ class FlickrClient: NSObject {
     func getImageUrlsByLocation(location: Location,
                                 completionHandler: (result: [[String: AnyObject]]!, error: NSError?, numPages: Int?) -> Void ) {
         
-        print("numpages: \(location.numberOfPages)")
+        // Choose a random page everytime
         var randomPage = 1
         if let numPages = location.numberOfPages as? Int {
             if numPages > 1 {
@@ -41,7 +41,6 @@ class FlickrClient: NSObject {
                 print("random page = \(randomPage)")
             }
         }
-        
         
         let methodArguments: [String: AnyObject] = [
             methodParameters.method: const.PHOTO_SEARCH,

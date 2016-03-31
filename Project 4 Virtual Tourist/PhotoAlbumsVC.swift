@@ -74,10 +74,10 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         layout.minimumInteritemSpacing = 0.5
         layout.minimumLineSpacing = 0.5
         
-        // center map around selectedLocation
+         // add the annotation to map
         if selectedLocation != nil {
             
-            // add the annotation to map
+            // center map around selectedLocation
             let span:MKCoordinateSpan = MKCoordinateSpanMake(10, 10)
             let region:MKCoordinateRegion = MKCoordinateRegionMake(selectedLocation.coordinate, span)
             mapView.setRegion(region, animated: true)
@@ -196,7 +196,6 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         }
     }
     
-    // three fresh arrays to record the index paths that will be changed.
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
         
         // We are about to handle some new changes. Start out with empty arrays for each change type
@@ -205,7 +204,6 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         deletedIndexPaths = [NSIndexPath]()
         updatedIndexPaths = [NSIndexPath]()
         
-        print("in controllerWillChangeContent")
     }
     
     
@@ -214,13 +212,13 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         switch type{
             
         case .Insert:
-            print("Insert an item")
+            //print("Insert an item")
             insertedIndexPaths.append(newIndexPath!)
         case .Delete:
-            print("Delete an item")
+            //print("Delete an item")
             deletedIndexPaths.append(indexPath!)
         case .Update:
-            print("Update an item.")
+            //print("Update an item.")
             updatedIndexPaths.append(indexPath!)
         default:
             break
@@ -334,7 +332,6 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
             else {
                 photo.saveImage(UIImage(data: imageData!))
                 print("saved \(photo.location)" )
-                //CoreDataStackManager.sharedInstance().saveContext()
                 
                 dispatch_async(dispatch_get_main_queue()) {
                     if let image = photo.getImage() {

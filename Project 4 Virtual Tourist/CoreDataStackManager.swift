@@ -1,6 +1,6 @@
 //
 //  CoreDataStackManager.swift
-//  FavoriteActors
+//  P4 Vitual Tourist
 //
 //  Created by Jason on 3/10/15.
 //  Copyright (c) 2015 Udacity. All rights reserved.

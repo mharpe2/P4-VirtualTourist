@@ -21,8 +21,6 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     var lastSelectedCoordinate: CLLocationCoordinate2D?
     var selectedLocation: Location! = nil
     var locationToBeAdded: Location? = nil
-    //var temporaryContext: NSManagedObjectContext!
-
     
     var sharedContext = {
         return CoreDataStackManager.sharedInstance().managedObjectContext!
@@ -55,10 +53,10 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     }
     
     // MARK: Lifecycle & UI Functions
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-    
         //Mark: UI - Custom Navigation buttons
         editButton = UIBarButtonItem(title: const.edit, style: .Plain, target: self, action: #selector(TravelLocationsMapVC.editButtonPressed(_:)))
         
@@ -67,7 +65,9 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
         
         mapView.delegate = self
         
-        longPressGesture = UILongPressGestureRecognizer(target: self, action: "addAnnotation:")
+        longPressGesture =
+            UILongPressGestureRecognizer(target: self,
+                                         action: #selector(TravelLocationsMapVC.addAnnotation(_:) ))
         longPressGesture.minimumPressDuration = 0.5
         longPressGesture.numberOfTapsRequired = 0
         longPressGesture.numberOfTouchesRequired = 1
@@ -78,8 +78,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
         self.mapView.addAnnotations( self.fetchLocations() )
         
     }
-    
-    
+
     func editButtonPressed(sender: UIButton) {
         dispatch_async(dispatch_get_main_queue()) {
             //Toogle view
@@ -88,6 +87,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     }
     
     // MARK: Map Functions
+    
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         
         guard let coordinate = view.annotation?.coordinate else {
@@ -128,7 +128,6 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     //create a view with a "right callout accessory view".
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         
-        
         if let annotation = annotation as? Location {
             let identifier = "pin"
             var view: MKPinAnnotationView
@@ -150,7 +149,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
         
     }
     
-    //MARK: addAnnotation - Create map annaotation & get photos
+    // addAnnotation - Create map annaotation & get photosRK:
     func addAnnotation(gestureRecognizer:UIGestureRecognizer){
         
         // Do not add pins when in delete mode
@@ -188,17 +187,16 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     }
     
     //MARK: Helper Funcs
+    
     func fetchLocations() -> [Location] {
         
         let error: NSError? = nil
         
         var results: [AnyObject]?
-        let fetchRequest = NSFetchRequest(entityName: "Location") //Location.Keys.location
-        
+        let fetchRequest = NSFetchRequest(entityName: "Location")
         do {
             results = try sharedContext().executeFetchRequest(fetchRequest)
-            
-            
+        
         } catch error! as NSError {
             
             results = nil

@@ -1,6 +1,6 @@
 //
 //  Photo.swift
-//  SleepingInTheLibrary
+//  P4 Vitual Tourist
 //
 //  Created by Michael Harper on 11/25/15.
 //  Copyright © 2015 Udacity. All rights reserved.
