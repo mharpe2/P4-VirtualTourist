@@ -17,11 +17,11 @@ class FlickrClient: NSObject {
     var sharedContext = {
         return CoreDataStackManager.sharedInstance().managedObjectContext!
     }
-    
-    
+
     // Session
     var session: NSURLSession!
-    //var foundPhotos: [Photo]   = []
+    var lastGeohash: String? = nil
+    var lastPage = 0
     
     override init() {
         session = NSURLSession.sharedSession()
@@ -32,15 +32,37 @@ class FlickrClient: NSObject {
     func getImageUrlsByLocation(location: Location,
                                 completionHandler: (result: [[String: AnyObject]]!, error: NSError?, numPages: Int?) -> Void ) {
         
-        // Choose a random page everytime
-        var randomPage = 1
-        if let numPages = location.numberOfPages as? Int {
-            if numPages > 1 {
-                
-                randomPage = Int(arc4random_uniform(UInt32(numPages)))
-                print("random page = \(randomPage)")
-            }
+        // visit pages incrementally
+        var page = 0
+        
+        // if browsing a new location reset page counter
+        if lastGeohash != location.geohash {
+            lastGeohash = location.geohash
+            lastPage = 0
+        } else  {
+            if let numPages = location.numberOfPages as? Int {
+                if numPages > 0 {
+                // loop around pages
+                page = (lastPage + 1) % numPages
+                lastPage = page
+                }
+             }
         }
+        if page == 0 {
+            page = 1
+        }
+        
+        print(" selected page: \(page) of \(location.numberOfPages)")
+        
+//        // Choose a random page everytime
+//        var randomPage = 1
+//        if let numPages = location.numberOfPages as? Int {
+//            if numPages > 1 {
+//                
+//                randomPage = Int(arc4random_uniform(UInt32(numPages)))
+//                print("random page = \(randomPage)")
+//            }
+//        }
         
         let methodArguments: [String: AnyObject] = [
             methodParameters.method: const.PHOTO_SEARCH,
@@ -50,7 +72,7 @@ class FlickrClient: NSObject {
             methodParameters.noJsonCallback: const.NO_JSON_CALLBACK,
             "lat" : location.latitude,
             "lon" : location.longitude,
-            methodParameters.page: randomPage,
+            methodParameters.page: page,
             methodParameters.perPage: 21
         ]
         
@@ -89,6 +111,10 @@ class FlickrClient: NSObject {
             }
             
             print( "NumberOfPages \(numPages)")
+            if (numPages != location.numberOfPages) {
+                location.numberOfPages = numPages
+                CoreDataStackManager.sharedInstance().saveContext()
+            }
             completionHandler(result: photoArray, error: nil, numPages: numPages)
         }
         
@@ -267,7 +293,6 @@ class FlickrClient: NSObject {
     }
     
     func fetchPhotosForLocation(location: Location, completionHandler: ((Void) -> (Void)) ) {
-        print("fetchPhotosForLocation \(location)")
         
         FlickrClient.sharedInstance().getImageUrlsByLocation(location) {
             result, error, numPages in
@@ -276,15 +301,11 @@ class FlickrClient: NSObject {
                 return
             }
             
-            
             _ = result.map() { ( dictionary: [String : AnyObject]) -> Photo in
-                // 1 - dictionary[Photo.Keys.location] = location // add location data to dict
+                
                 let photo = Photo(dictionary: dictionary, context: self.sharedContext())
                 photo.location = location
                 location.photos.addObject(photo)
-                
-                print("Location \(photo.location)")
-                //CoreDataStackManager.sharedInstance().saveContext()
                 
                 FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
                     success, imageData, error in
@@ -292,15 +313,16 @@ class FlickrClient: NSObject {
                         print("error extracting " + photo.url!)
                     } else {
                         dispatch_async(dispatch_get_main_queue()) {
+                            
                             photo.saveImage(UIImage(data: imageData!))
-                            print("saved \(photo.location)" )
+                            //print("saved \(photo.location)" )
                             CoreDataStackManager.sharedInstance().saveContext()
+                        
                         } //end dispatch
                     }
                 }) // end taskForGetImage
                 return photo
             } // end result.map()
-            
         }
     }
     
@@ -311,7 +333,7 @@ class FlickrClient: NSObject {
                 print("error extracting " + photo.url!)
             } else {
                 photo.saveImage(UIImage(data: imageData!))
-                print("saved \(photo.location)" )
+                //print("saved \(photo.location)" )
                 CoreDataStackManager.sharedInstance().saveContext()
             }
         }) // end taskForGetImage

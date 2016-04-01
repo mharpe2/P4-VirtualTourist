@@ -20,7 +20,7 @@ class Photo: NSManagedObject {
         static let url = "url_m"
         static let title = "title"
         static let photo = "Photo"
-        static let location = "Location"
+        //static let location = "Location"
         static let fileName = "fileName"
     }
 
@@ -38,7 +38,7 @@ class Photo: NSManagedObject {
         
         // Dictionary
         url = (dictionary[Keys.url] as? String)!
-        location = Location(dictionary: dictionary, context: context)
+        //location = Location(dictionary: dictionary, context: context)
         fileName = getLastPathComponent(url!) //generate filename
         title = (dictionary[Keys.title] as? String )
          }
@@ -49,7 +49,9 @@ class Photo: NSManagedObject {
     }
     
     func saveImage(image: UIImage?) {
-        FlickrClient.Caches.imageCache.storeImage(image, withIdentifier: fileName!)
+        if fileName != nil {
+            FlickrClient.Caches.imageCache.storeImage(image, withIdentifier: fileName!)
+        }
     }
     
     func deleteImage() -> Bool {

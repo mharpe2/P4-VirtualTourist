@@ -19,9 +19,9 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var noImagesForThisLocationLabel: UILabel!
     
-    
     var oKButton: UIBarButtonItem!
     var selectedLocation: Location!
+    var lastPage = 1
     
     // The selected indexes array keeps all of the indexPaths for cells that are "selected". The array is
     // used inside cellForItemAtIndexPath to lower the alpha of selected cells.  You can see how the array
@@ -301,7 +301,6 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         
         // delete all photos
         for photo in fetchedResultsController.fetchedObjects as! [Photo] {
-            
             photo.deleteImage()
             sharedContext()!.deleteObject(photo)
         }
@@ -364,7 +363,15 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         else { // remove selceted photos from set
             for item in selectedIndexes {
                 // delete the item from fetched results
+               
+                let photo = fetchedResultsController.objectAtIndexPath(item) as! Photo
+                
+                // remove photo from dir
+                photo.deleteImage()
+                
+                // remove from core data
                 sharedContext()?.deleteObject(fetchedResultsController.objectAtIndexPath(item) as! Photo)
+                
             }
             // reset selected index
             selectedIndexes = []

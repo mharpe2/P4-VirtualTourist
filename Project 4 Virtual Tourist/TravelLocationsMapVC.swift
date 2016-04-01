@@ -101,8 +101,14 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
             print("Deleting location \(coordinate)")
             //self.sharedContext.deleteObject(pin)
             let pin = view.annotation as! Location
+            
+            //remove stored photos
+            for photo in pin.photos {
+                let image = photo as? Photo
+                image?.deleteImage()
+            }
             sharedContext().deleteObject(pin)
-            removeDuplicateLocations(pin)
+            //removeDuplicateLocations(pin)
             mapView.removeAnnotation(pin)
             CoreDataStackManager.sharedInstance().saveContext()
            }
@@ -120,6 +126,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
             // load selected location into photoVC
             photoAlbumsVC.selectedLocation = thisLocation
             self.navigationController?.pushViewController(photoAlbumsVC, animated: true)
+            mapView.deselectAnnotation(view.annotation, animated: true)
         }
         
     }
