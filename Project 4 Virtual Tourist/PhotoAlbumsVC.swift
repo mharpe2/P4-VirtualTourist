@@ -301,7 +301,7 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         
         // delete all photos
         for photo in fetchedResultsController.fetchedObjects as! [Photo] {
-            photo.deleteImage()
+            //photo.deleteImage()
             sharedContext()!.deleteObject(photo)
         }
         
@@ -367,7 +367,7 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
                 let photo = fetchedResultsController.objectAtIndexPath(item) as! Photo
                 
                 // remove photo from dir
-                photo.deleteImage()
+                //photo.deleteImage()
                 
                 // remove from core data
                 sharedContext()?.deleteObject(fetchedResultsController.objectAtIndexPath(item) as! Photo)

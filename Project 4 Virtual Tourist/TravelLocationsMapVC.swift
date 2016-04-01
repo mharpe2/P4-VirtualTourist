@@ -102,11 +102,11 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
             //self.sharedContext.deleteObject(pin)
             let pin = view.annotation as! Location
             
-            //remove stored photos
-            for photo in pin.photos {
-                let image = photo as? Photo
-                image?.deleteImage()
-            }
+//            //remove stored photos
+//            for photo in pin.photos {
+//                let image = photo as? Photo
+//                image?.deleteImage()
+//            }
             sharedContext().deleteObject(pin)
             //removeDuplicateLocations(pin)
             mapView.removeAnnotation(pin)

@@ -54,12 +54,15 @@ class Photo: NSManagedObject {
         }
     }
     
+    override func prepareForDeletion() {
+        FlickrClient.Caches.imageCache.storeImage(nil, withIdentifier: fileName!)
+    }
+    
     func deleteImage() -> Bool {
         if FlickrClient.Caches.imageCache.storeImage(nil, withIdentifier: fileName!) == false {
             //image was deleted
             return true
         }
-        
         //image was not deleted
         return false
     }
