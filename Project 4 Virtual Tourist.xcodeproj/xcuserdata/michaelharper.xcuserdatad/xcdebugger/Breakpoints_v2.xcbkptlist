@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Project 4 Virtual Tourist/FlickrClient.swift"
-            timestampString = "481225489.327122"
+            timestampString = "483739693.885581"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "35"
-            endingLineNumber = "35"
+            startingLineNumber = "31"
+            endingLineNumber = "31"
             landmarkName = "init()"
             landmarkType = "5">
          </BreakpointContent>

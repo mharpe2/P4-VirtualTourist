@@ -304,8 +304,9 @@ class FlickrClient: NSObject {
     
     func fetchPhotosForLocationInBackround(location: Location, completionHandler: ((Void) -> (Void)) ) {
         
-        var context = CoreDataStackManager.sharedInstance().coreDataStack!.privateQueueContext
+        let workerContext = CoreDataStackManager.sharedInstance().coreDataStack!.newBackgroundWorkerMOC()
         
+        workerContext.performBlock() {
         FlickrClient.sharedInstance().getImageUrlsByLocation(location) {
             result, error, numPages in
             if result == nil {
@@ -328,17 +329,19 @@ class FlickrClient: NSObject {
                         
                         photo.saveImage(UIImage(data: imageData!))
                         
-                        do {
-                            try context.save()
-                        } catch _ {
-                            print("Could not save")
-                        }
+//                        do {
+//                            try context.save()
+//                        } catch _ {
+//                            print("Could not save")
+//                        }
                     
                     }
                 }) // end taskForGetImage
                 return photo
             } // end result.map()
         }
+        }
+        workerContext.saveContext()
 
         
     
