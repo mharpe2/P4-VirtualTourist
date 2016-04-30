@@ -186,17 +186,8 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
                 locationToBeAdded!.didChangeValueForKey("coordinate")
                 
             case .Ended:
-                
-                // save in completion handler??????
                 //MARK: Flickr load photos in backround
                 FlickrClient.sharedInstance().fetchPhotosForLocationInBackround(locationToBeAdded!) { }
-                //CoreDataStackManager.sharedInstance().saveContext()
-//                do {
-//                    try sharedContext().save()
-//                } catch _ {
-//                    print("Could not save")
-//                }
-
                 print("count = \(self.fetchLocations().count)")
                 
             default:
