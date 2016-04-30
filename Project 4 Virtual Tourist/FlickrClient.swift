@@ -9,13 +9,16 @@
 import UIKit
 import MapKit
 import Foundation
+import BNRCoreDataStack
 import CoreData
 
+
 class FlickrClient: NSObject {
-    
+     
     typealias CompletionHander = (result: AnyObject!, error: NSError?) -> Void
     var sharedContext = {
-        return CoreDataStackManager.sharedInstance().managedObjectContext!
+        return CoreDataStackManager.sharedInstance().coreDataStack!.mainQueueContext
+       
     }
 
     // Session
@@ -113,7 +116,13 @@ class FlickrClient: NSObject {
             print( "NumberOfPages \(numPages)")
             if (numPages != location.numberOfPages) {
                 location.numberOfPages = numPages
-                CoreDataStackManager.sharedInstance().saveContext()
+                //CoreDataStackManager.sharedInstance().saveContext()
+                do {
+                    try self.sharedContext().save()
+                } catch _ {
+                    print("Could not save")
+                }
+
             }
             completionHandler(result: photoArray, error: nil, numPages: numPages)
         }
@@ -292,6 +301,49 @@ class FlickrClient: NSObject {
         return Singleton.sharedInstance
     }
     
+    
+    func fetchPhotosForLocationInBackround(location: Location, completionHandler: ((Void) -> (Void)) ) {
+        
+        var context = CoreDataStackManager.sharedInstance().coreDataStack!.privateQueueContext
+        
+        FlickrClient.sharedInstance().getImageUrlsByLocation(location) {
+            result, error, numPages in
+            if result == nil {
+                print("fetchPhotosForLocations returned nil")
+                return
+            }
+            
+            _ = result.map() { ( dictionary: [String : AnyObject]) -> Photo in
+                
+                let photo = Photo(dictionary: dictionary, context: self.sharedContext())
+                photo.location = location
+                location.photos.addObject(photo)
+                
+                FlickrClient.sharedInstance().taskForGETImage(photo.url!, completionHandler: {
+                    success, imageData, error in
+                    if success != true {
+                        print("error extracting " + photo.url!)
+                    } else {
+                        //dispatch_async(dispatch_get_main_queue()) {
+                        
+                        photo.saveImage(UIImage(data: imageData!))
+                        
+                        do {
+                            try context.save()
+                        } catch _ {
+                            print("Could not save")
+                        }
+                    
+                    }
+                }) // end taskForGetImage
+                return photo
+            } // end result.map()
+        }
+
+        
+    
+    }
+    
     func fetchPhotosForLocation(location: Location, completionHandler: ((Void) -> (Void)) ) {
         
         FlickrClient.sharedInstance().getImageUrlsByLocation(location) {
@@ -312,13 +364,14 @@ class FlickrClient: NSObject {
                     if success != true {
                         print("error extracting " + photo.url!)
                     } else {
-                        dispatch_async(dispatch_get_main_queue()) {
+                        //dispatch_async(dispatch_get_main_queue()) {
                             
                             photo.saveImage(UIImage(data: imageData!))
-                            //print("saved \(photo.location)" )
-                            CoreDataStackManager.sharedInstance().saveContext()
-                        
-                        } //end dispatch
+                             do {
+                                try self.sharedContext().save()
+                            } catch _ {
+                                print("Could not save")
+                            }
                     }
                 }) // end taskForGetImage
                 return photo
@@ -334,7 +387,13 @@ class FlickrClient: NSObject {
             } else {
                 photo.saveImage(UIImage(data: imageData!))
                 //print("saved \(photo.location)" )
-                CoreDataStackManager.sharedInstance().saveContext()
+                //CoreDataStackManager.sharedInstance().saveContext()
+                do {
+                    try self.sharedContext().save()
+                } catch _ {
+                    print("Could not save")
+                }
+
             }
         }) // end taskForGetImage
     }

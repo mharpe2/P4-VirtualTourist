@@ -8,10 +8,11 @@
 
 import UIKit
 import MapKit
+import BNRCoreDataStack
 import CoreData
 
 
-class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
+class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate  {
     
     @IBOutlet weak var newCollection: UIButton!
     @IBOutlet weak var collectionView: UICollectionView!
@@ -28,32 +29,33 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     // works by searchign through the code for 'selectedIndexes'
     var selectedIndexes = [NSIndexPath]()
     
-    // Keep the changes. We will keep track of insertions, deletions, and updates.
-    var insertedIndexPaths: [NSIndexPath]!
-    var deletedIndexPaths: [NSIndexPath]!
-    var updatedIndexPaths: [NSIndexPath]!
     
     var sharedContext = {
-        return CoreDataStackManager.sharedInstance().managedObjectContext
+        // using mainQueueContext to work on UI thread
+        return CoreDataStackManager.sharedInstance().coreDataStack!.mainQueueContext
+        
     }
     
     // fetchedResultsController
-    lazy var fetchedResultsController: NSFetchedResultsController = {
+    lazy var fetchedResultsController: FetchedResultsController<Photo> = {
         
         //Create fetch request for photos which match the sent Location.
         
-        let fetchRequest = NSFetchRequest(entityName: "Photo")
+        let fetchRequest = NSFetchRequest(entityName: Photo.entityName)
         fetchRequest.predicate = NSPredicate(format: "location == %@", self.selectedLocation)
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         fetchRequest.sortDescriptors = []
         
         //Create fetched results controller with the new fetch request.
-        let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
-                                                                  managedObjectContext: self.sharedContext()!,
+        var fetchedResultsController = FetchedResultsController<Photo>(fetchRequest: fetchRequest,
+                                                                  managedObjectContext: self.sharedContext(),
                                                                   sectionNameKeyPath: nil,
                                                                   cacheName: nil)
-        fetchedResultsController.delegate = self
+        
         return fetchedResultsController
+    }()
+    lazy var frcDelegate: PhotosFetchedResultsControllerDelegate = {
+        return PhotosFetchedResultsControllerDelegate(collectionView: self.collectionView)
     }()
     
     //MARK: Lifecycle
@@ -62,6 +64,7 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         super.viewDidLoad()
         
         //Delegates
+        fetchedResultsController.setDelegate(frcDelegate)
         mapView.delegate = self
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -107,11 +110,7 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         
-        guard let sectionInfo = self.fetchedResultsController.sections?[section] else {
-            return 1
-        }
-        
-        return sectionInfo.numberOfObjects
+        return fetchedResultsController.sections?[section].objects.count ?? 0
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
@@ -121,7 +120,13 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         // dequeued cell
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(cellIdentifer, forIndexPath: indexPath) as! PhotoCell
         
-        let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+        //let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+        guard let sections = fetchedResultsController.sections else {
+            assertionFailure("Sections missing")
+            return cell
+        }
+        let section = sections[indexPath.section]
+        let photo = section.objects[indexPath.row]
         
         // if photo already downloaded, display it
         if photo.getImage() != nil {
@@ -178,7 +183,15 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     
     func configureCell(cell: PhotoCell, atIndexPath indexPath: NSIndexPath) {
         
-        let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+        //let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+
+        guard let sections = fetchedResultsController.sections else {
+            assertionFailure("Sections missing")
+            return
+        }
+        let section = sections[indexPath.section]
+        let photo = section.objects[indexPath.row]
+        
         if let image = photo.getImage() {
             cell.imageView.image = image
             cell.activityIndicator.stopAnimating()
@@ -196,62 +209,6 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         }
     }
     
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
-        
-        // We are about to handle some new changes. Start out with empty arrays for each change type
-        
-        insertedIndexPaths = [NSIndexPath]()
-        deletedIndexPaths = [NSIndexPath]()
-        updatedIndexPaths = [NSIndexPath]()
-        
-    }
-    
-    
-    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-        
-        switch type{
-            
-        case .Insert:
-            //print("Insert an item")
-            insertedIndexPaths.append(newIndexPath!)
-        case .Delete:
-            //print("Delete an item")
-            deletedIndexPaths.append(indexPath!)
-        case .Update:
-            //print("Update an item.")
-            updatedIndexPaths.append(indexPath!)
-        default:
-            break
-            
-        }
-    }
-    
-    // This method is invoked after all of the changed in the current batch have been collected
-    // into the three index path arrays (insert, delete, and upate). We now need to loop through the
-    // arrays and perform the changes.
-    //
-    // The most interesting thing about the method is the collection view's "performBatchUpdates" method.
-    // Notice that all of the changes are performed inside a closure that is handed to the collection view.
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
-        
-        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count)")
-        
-        collectionView.performBatchUpdates({() -> Void in
-            
-            for indexPath in self.insertedIndexPaths {
-                self.collectionView.insertItemsAtIndexPaths([indexPath])
-            }
-            
-            for indexPath in self.deletedIndexPaths {
-                self.collectionView.deleteItemsAtIndexPaths([indexPath])
-            }
-            
-            for indexPath in self.updatedIndexPaths {
-                self.collectionView.reloadItemsAtIndexPaths([indexPath])
-            }
-            
-            }, completion: nil)
-    }
     
     //MARK: Mapview
     
@@ -299,10 +256,19 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
         newCollection.enabled = false
         print("load new photos for location \(selectedLocation!)")
         
-        // delete all photos
-        for photo in fetchedResultsController.fetchedObjects as! [Photo] {
-            //photo.deleteImage()
-            sharedContext()!.deleteObject(photo)
+//         // delete all photos
+//        for photo in fetchedResultsController.fetchedObjects as! [Photo] {
+//            //photo.deleteImage()
+//            sharedContext()!.deleteObject(photo)
+//        }
+        
+        
+        guard let photos = fetchedResultsController.fetchedObjects else {
+            assertionFailure("objects missing")
+            return
+        }
+        for photo in photos {
+            sharedContext().deleteObject(photo)
         }
         
         // remove all photos from location
@@ -364,18 +330,23 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
             for item in selectedIndexes {
                 // delete the item from fetched results
                
-                let photo = fetchedResultsController.objectAtIndexPath(item) as! Photo
+                //let photo = fetchedResultsController.objectAtIndexPath(item) as! Photo
                 
                 // remove photo from dir
                 //photo.deleteImage()
                 
                 // remove from core data
-                sharedContext()?.deleteObject(fetchedResultsController.objectAtIndexPath(item) as! Photo)
+                sharedContext().deleteObject(fetchedResultsController[item])
                 
             }
             // reset selected index
             selectedIndexes = []
-            CoreDataStackManager.sharedInstance().saveContext()
+            //CoreDataStackManager.sharedInstance().saveContext()
+            do {
+                try sharedContext().save()
+            } catch _ {
+                print("could not save after deletion")
+            }
             
             // newCollection button should always be "New Collection" after photos
             // are removed
@@ -389,3 +360,143 @@ class PhotoAlbumsVC: UIViewController, MKMapViewDelegate, UICollectionViewDataSo
     }
 }
 
+
+
+class PhotosFetchedResultsControllerDelegate: FetchedResultsControllerDelegate {
+    
+    private weak var collectionView: UICollectionView?
+    
+    // Keep the changes. We will keep track of insertions, deletions, and updates.
+    var insertedIndexPaths: [NSIndexPath]!
+    var deletedIndexPaths: [NSIndexPath]!
+    var updatedIndexPaths: [NSIndexPath]!
+
+    
+    init(collectionView: UICollectionView) {
+        self.collectionView = collectionView
+        insertedIndexPaths = [NSIndexPath]()
+        deletedIndexPaths = [NSIndexPath]()
+        updatedIndexPaths = [NSIndexPath]()
+
+    }
+    
+    func fetchedResultsControllerDidPerformFetch(controller: FetchedResultsController<Photo>) {
+        collectionView?.reloadData()
+    }
+    
+    func fetchedResultsControllerWillChangeContent(controller: FetchedResultsController<Photo>) {
+        insertedIndexPaths = [NSIndexPath]()
+        deletedIndexPaths = [NSIndexPath]()
+        updatedIndexPaths = [NSIndexPath]()
+
+    }
+    
+    func fetchedResultsControllerDidChangeContent(controller: FetchedResultsController<Photo>) {
+        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count)")
+        
+        collectionView!.performBatchUpdates({() -> Void in
+            
+            for indexPath in self.insertedIndexPaths {
+                self.collectionView!.insertItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.deletedIndexPaths {
+                self.collectionView!.deleteItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.updatedIndexPaths {
+                self.collectionView!.reloadItemsAtIndexPaths([indexPath])
+            }
+            
+            }, completion: nil)
+
+    }
+    
+    func fetchedResultsController(controller: FetchedResultsController<Photo>,
+                                  didChangeObject change: FetchedResultsObjectChange<Photo>) {
+           switch change {
+        case let .Insert(_, indexPath):
+             insertedIndexPaths.append(indexPath)
+            
+        case let .Delete(_, indexPath):
+            deletedIndexPaths.append(indexPath)
+        case let .Move(_, fromIndexPath, toIndexPath): break
+           
+            
+        case let .Update(_, indexPath):
+            updatedIndexPaths.append(indexPath)
+        }
+    }
+    
+    func fetchedResultsController(controller: FetchedResultsController<Photo>,
+                                  didChangeSection change: FetchedResultsSectionChange<Photo>) {
+//        switch change {
+//        case let .Insert(_, index):
+//            collectionView?.insertSections(NSIndexSet(index: index), withRowAnimation: .Automatic)
+//            
+//        case let .Delete(_, index):
+//            collectionView?.deleteSections(NSIndexSet(index: index), withRowAnimation: .Automatic)
+        }
+}
+
+
+//extension PhotoAlbumsVC: NSFetchedResultsControllerDelegate {
+//    
+//    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+//        
+//        // We are about to handle some new changes. Start out with empty arrays for each change type
+//        
+//        insertedIndexPaths = [NSIndexPath]()
+//        deletedIndexPaths = [NSIndexPath]()
+//        updatedIndexPaths = [NSIndexPath]()
+//        
+//    }
+//    
+//    
+//    func controller(controller: FetchedResultsController<Photo>, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+//        
+//        switch type{
+//            
+//        case .Insert:
+//            //print("Insert an item")
+//            insertedIndexPaths.append(newIndexPath!)
+//        case .Delete:
+//            //print("Delete an item")
+//            deletedIndexPaths.append(indexPath!)
+//        case .Update:
+//            //print("Update an item.")
+//            updatedIndexPaths.append(indexPath!)
+//        default:
+//            break
+//            
+//        }
+//    }
+//    
+//    // This method is invoked after all of the changed in the current batch have been collected
+//    // into the three index path arrays (insert, delete, and upate). We now need to loop through the
+//    // arrays and perform the changes.
+//    //
+//    // The most interesting thing about the method is the collection view's "performBatchUpdates" method.
+//    // Notice that all of the changes are performed inside a closure that is handed to the collection view.
+//    func controllerDidChangeContent(controller: FetchedResultsController<Photo>) {
+//        
+//        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count)")
+//        
+//        collectionView.performBatchUpdates({() -> Void in
+//            
+//            for indexPath in self.insertedIndexPaths {
+//                self.collectionView.insertItemsAtIndexPaths([indexPath])
+//            }
+//            
+//            for indexPath in self.deletedIndexPaths {
+//                self.collectionView.deleteItemsAtIndexPaths([indexPath])
+//            }
+//            
+//            for indexPath in self.updatedIndexPaths {
+//                self.collectionView.reloadItemsAtIndexPaths([indexPath])
+//            }
+//            
+//            }, completion: nil)
+//    }
+//
+//}

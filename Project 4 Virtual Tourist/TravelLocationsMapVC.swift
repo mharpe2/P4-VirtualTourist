@@ -8,7 +8,9 @@
 
 import UIKit
 import MapKit
+import BNRCoreDataStack
 import CoreData
+
 
 class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
     
@@ -23,7 +25,9 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     var locationToBeAdded: Location? = nil
     
     var sharedContext = {
-        return CoreDataStackManager.sharedInstance().managedObjectContext!
+        // using mainQueueContext to work on UI thread
+        return CoreDataStackManager.sharedInstance().coreDataStack!.mainQueueContext
+
     }
     
     
@@ -102,16 +106,17 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
             //self.sharedContext.deleteObject(pin)
             let pin = view.annotation as! Location
             
-//            //remove stored photos
-//            for photo in pin.photos {
-//                let image = photo as? Photo
-//                image?.deleteImage()
-//            }
             sharedContext().deleteObject(pin)
             //removeDuplicateLocations(pin)
             mapView.removeAnnotation(pin)
-            CoreDataStackManager.sharedInstance().saveContext()
-           }
+            //CoreDataStackManager.sharedInstance().save()
+            do {
+                try sharedContext().save()
+            } catch _ {
+                print("Could not save")
+            }
+            
+        }
         
             // else view photoalbums
         else {
@@ -183,8 +188,15 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
             case .Ended:
                 
                 // save in completion handler??????
-                FlickrClient.sharedInstance().fetchPhotosForLocation(locationToBeAdded!) { }
-                CoreDataStackManager.sharedInstance().saveContext()
+                //MARK: Flickr load photos in backround
+                FlickrClient.sharedInstance().fetchPhotosForLocationInBackround(locationToBeAdded!) { }
+                //CoreDataStackManager.sharedInstance().saveContext()
+//                do {
+//                    try sharedContext().save()
+//                } catch _ {
+//                    print("Could not save")
+//                }
+
                 print("count = \(self.fetchLocations().count)")
                 
             default:
@@ -203,6 +215,7 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
         let fetchRequest = NSFetchRequest(entityName: "Location")
         do {
             results = try sharedContext().executeFetchRequest(fetchRequest)
+            
         
         } catch error! as NSError {
             
@@ -218,75 +231,4 @@ class TravelLocationsMapVC: UIViewController, MKMapViewDelegate, NSFetchedResult
     }
     
     
-    func removeDuplicateLocations(location: Location) -> Int? {
-        
-       
-        var error: NSError!
-        
-        let results: [AnyObject]?
-        let fetchRequest = NSFetchRequest(entityName: Location.Keys.location)
-        let predicate = NSPredicate(format: "geohash == %@" , location.geohash)
-        fetchRequest.predicate = predicate
-        
-        do {
-            results = try sharedContext().executeFetchRequest(fetchRequest)
-        } catch error as NSError {
-            
-            results = nil
-        } catch _ {
-            results = nil
-        }
-        
-        if error != nil {
-            displayError(self, errorString: "fetch failed")
-        }
-        
-        guard let locationResults = results as? [Location] else {
-            return nil
-        }
-        
-        var locationCounted = 0
-        if !results!.isEmpty {
-            for x in locationResults {
-                    locationCounted = locationCounted + 1
-                    self.sharedContext().deleteObject(x)
-                    CoreDataStackManager.sharedInstance().saveContext()
-                }
-            }
-        return locationCounted
-        }
-    
-    
-    
-    
-    func doesLocationExist(latitiude: Double, longitude: Double) -> Bool {
-        
-        let geohash = Geohash.encode(latitude: latitiude, longitude: longitude)
-        let fetchRequest = NSFetchRequest(entityName: Location.Keys.location)
-        fetchRequest.predicate = NSPredicate(format: "geohash == %@" , geohash)
-        
-        let results: [AnyObject]?
-        var error: NSError!
-        do {
-            results = try sharedContext().executeFetchRequest(fetchRequest)
-            
-        } catch error as NSError {
-            
-            results = nil
-            return false
-        } catch _ {
-            results = nil
-            return false
-        }
-        
-        if error != nil {
-            displayError(self, errorString: "Duplicate check failed")
-        }
-        
-        if results!.isEmpty {
-            return false
-        }
-        
-        return true
     }
-}

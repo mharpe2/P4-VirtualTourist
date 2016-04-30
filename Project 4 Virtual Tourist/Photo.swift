@@ -7,9 +7,11 @@
 //
 
 import UIKit
+import BNRCoreDataStack
 import CoreData
 
-class Photo: NSManagedObject {
+class Photo: NSManagedObject, CoreDataModelable {
+    static let entityName = "Photo"
     
     @NSManaged var location: Location?
     @NSManaged var url: String?

@@ -6,10 +6,15 @@
 //  Copyright © 2015 hxx. All rights reserved.
 //
 
-import CoreData
+//import CoreData
 import MapKit
+import BNRCoreDataStack
+import CoreData
 
-class Location: NSManagedObject, MKAnnotation{
+
+class Location: NSManagedObject, MKAnnotation, CoreDataModelable {
+    
+    static let entityName = "Location"
     
     @NSManaged var latitude: Double
     @NSManaged var longitude: Double

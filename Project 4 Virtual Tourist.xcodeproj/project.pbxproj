@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		791F9B9F1CC86DC70052884D /* CoreDataStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 791F9B9E1CC86DC70052884D /* CoreDataStackManager.swift */; };
 		794C2E451BEA74A700452914 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794C2E441BEA74A700452914 /* AppDelegate.swift */; };
 		794C2E4A1BEA74A700452914 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 794C2E481BEA74A700452914 /* Main.storyboard */; };
 		794C2E4F1BEA74A700452914 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 794C2E4E1BEA74A700452914 /* Assets.xcassets */; };
@@ -17,7 +18,6 @@
 		794C2E801BED1FCD00452914 /* UICommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794C2E7F1BED1FCD00452914 /* UICommon.swift */; };
 		795A24C01BF3BBA40083E99B /* PhotoAlbumsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795A24BF1BF3BBA40083E99B /* PhotoAlbumsVC.swift */; };
 		795A24C21BF502BB0083E99B /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795A24C11BF502BB0083E99B /* PhotoCell.swift */; };
-		796253D81C19EEA3009E6BBA /* CoreDataStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796253D71C19EEA3009E6BBA /* CoreDataStackManager.swift */; };
 		796638E31C8CC6FC0016F252 /* Geohash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796638E21C8CC6FC0016F252 /* Geohash.swift */; };
 		796638E51C8CC7040016F252 /* GeohashBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796638E41C8CC7040016F252 /* GeohashBox.swift */; };
 		7995C9831C431AB5006CA8EB /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 7995C9811C431AB5006CA8EB /* Model.xcdatamodeld */; };
@@ -27,6 +27,7 @@
 		79C7AA0B1C0CABA600ADB9CB /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C7AA0A1C0CABA600ADB9CB /* Location.swift */; };
 		79C7AA0D1C0CCC3700ADB9CB /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C7AA0C1C0CCC3700ADB9CB /* Photo.swift */; };
 		79CBE8991C94CFBD00D9290F /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 79CBE8981C94CFBD00D9290F /* MapKit.framework */; };
+		83A57497A3CA99C10FC61F6B /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E55E40B38F8D9F298A054215 /* Pods.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3D28B43D38576E3D0C238FD1 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		791F9B9E1CC86DC70052884D /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataStackManager.swift; sourceTree = "<group>"; };
 		794C2E411BEA74A700452914 /* Project 4 Virtual Tourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Project 4 Virtual Tourist.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		794C2E441BEA74A700452914 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		794C2E491BEA74A700452914 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -63,7 +66,6 @@
 		794C2E7F1BED1FCD00452914 /* UICommon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UICommon.swift; sourceTree = "<group>"; };
 		795A24BF1BF3BBA40083E99B /* PhotoAlbumsVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoAlbumsVC.swift; sourceTree = "<group>"; };
 		795A24C11BF502BB0083E99B /* PhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
-		796253D71C19EEA3009E6BBA /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataStackManager.swift; sourceTree = "<group>"; };
 		796638E21C8CC6FC0016F252 /* Geohash.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Geohash.swift; sourceTree = "<group>"; };
 		796638E41C8CC7040016F252 /* GeohashBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeohashBox.swift; sourceTree = "<group>"; };
 		7995C9821C431AB5006CA8EB /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
@@ -73,6 +75,8 @@
 		79C7AA0A1C0CABA600ADB9CB /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		79C7AA0C1C0CCC3700ADB9CB /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		79CBE8981C94CFBD00D9290F /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		BF24DAA2ED07B46D04CF4C43 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
+		E55E40B38F8D9F298A054215 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +85,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				79CBE8991C94CFBD00D9290F /* MapKit.framework in Frameworks */,
+				83A57497A3CA99C10FC61F6B /* Pods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +106,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		258DD0750AA2C97DE2C77CAF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E55E40B38F8D9F298A054215 /* Pods.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		76650BD97DE1B2C6F4B0E204 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				BF24DAA2ED07B46D04CF4C43 /* Pods.debug.xcconfig */,
+				3D28B43D38576E3D0C238FD1 /* Pods.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		794C2E381BEA74A600452914 = {
 			isa = PBXGroup;
 			children = (
@@ -109,6 +131,8 @@
 				794C2E5B1BEA74A700452914 /* Project 4 Virtual TouristTests */,
 				794C2E661BEA74A700452914 /* Project 4 Virtual TouristUITests */,
 				794C2E421BEA74A700452914 /* Products */,
+				76650BD97DE1B2C6F4B0E204 /* Pods */,
+				258DD0750AA2C97DE2C77CAF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -157,7 +181,6 @@
 			isa = PBXGroup;
 			children = (
 				796638E61C8CD98E0016F252 /* geohash */,
-				796253D71C19EEA3009E6BBA /* CoreDataStackManager.swift */,
 				79C7AA0C1C0CCC3700ADB9CB /* Photo.swift */,
 				79C7AA0A1C0CABA600ADB9CB /* Location.swift */,
 				79C7AA071C0CAB7100ADB9CB /* FlickrClient.swift */,
@@ -170,6 +193,7 @@
 		794C2E771BEA754100452914 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				791F9B9E1CC86DC70052884D /* CoreDataStackManager.swift */,
 				794C2E7F1BED1FCD00452914 /* UICommon.swift */,
 				794C2E441BEA74A700452914 /* AppDelegate.swift */,
 				794C2E791BEA7CDE00452914 /* TravelLocationsMapVC.swift */,
@@ -204,9 +228,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 794C2E6C1BEA74A700452914 /* Build configuration list for PBXNativeTarget "Project 4 Virtual Tourist" */;
 			buildPhases = (
+				3594AD7F47645A801FBAFB86 /* Check Pods Manifest.lock */,
 				794C2E3D1BEA74A700452914 /* Sources */,
 				794C2E3E1BEA74A700452914 /* Frameworks */,
 				794C2E3F1BEA74A700452914 /* Resources */,
+				D9E961C568E953230B674F59 /* Embed Pods Frameworks */,
+				6425A4AFC99E8830CF3CB8E9 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -330,6 +357,54 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		3594AD7F47645A801FBAFB86 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		6425A4AFC99E8830CF3CB8E9 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D9E961C568E953230B674F59 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		794C2E3D1BEA74A700452914 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -338,8 +413,8 @@
 				795A24C01BF3BBA40083E99B /* PhotoAlbumsVC.swift in Sources */,
 				794C2E451BEA74A700452914 /* AppDelegate.swift in Sources */,
 				794C2E7A1BEA7CDE00452914 /* TravelLocationsMapVC.swift in Sources */,
+				791F9B9F1CC86DC70052884D /* CoreDataStackManager.swift in Sources */,
 				795A24C21BF502BB0083E99B /* PhotoCell.swift in Sources */,
-				796253D81C19EEA3009E6BBA /* CoreDataStackManager.swift in Sources */,
 				79C7AA0D1C0CCC3700ADB9CB /* Photo.swift in Sources */,
 				7995C9851C505550006CA8EB /* ImageCache.swift in Sources */,
 				79C7AA0B1C0CABA600ADB9CB /* Location.swift in Sources */,
@@ -488,6 +563,7 @@
 		};
 		794C2E6D1BEA74A700452914 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BF24DAA2ED07B46D04CF4C43 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -504,6 +580,7 @@
 		};
 		794C2E6E1BEA74A700452914 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3D28B43D38576E3D0C238FD1 /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
