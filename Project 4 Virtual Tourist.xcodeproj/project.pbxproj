@@ -22,6 +22,7 @@
 		796638E51C8CC7040016F252 /* GeohashBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796638E41C8CC7040016F252 /* GeohashBox.swift */; };
 		7995C9831C431AB5006CA8EB /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 7995C9811C431AB5006CA8EB /* Model.xcdatamodeld */; };
 		7995C9851C505550006CA8EB /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7995C9841C505550006CA8EB /* ImageCache.swift */; };
+		7999F4D41CD835C000C60B80 /* Podfile.lock in Resources */ = {isa = PBXBuildFile; fileRef = 7999F4D31CD835C000C60B80 /* Podfile.lock */; };
 		79C7AA081C0CAB7100ADB9CB /* FlickrConst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C7AA061C0CAB7100ADB9CB /* FlickrConst.swift */; };
 		79C7AA091C0CAB7100ADB9CB /* FlickrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C7AA071C0CAB7100ADB9CB /* FlickrClient.swift */; };
 		79C7AA0B1C0CABA600ADB9CB /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C7AA0A1C0CABA600ADB9CB /* Location.swift */; };
@@ -70,6 +71,7 @@
 		796638E41C8CC7040016F252 /* GeohashBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeohashBox.swift; sourceTree = "<group>"; };
 		7995C9821C431AB5006CA8EB /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 		7995C9841C505550006CA8EB /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
+		7999F4D31CD835C000C60B80 /* Podfile.lock */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile.lock; sourceTree = "<group>"; };
 		79C7AA061C0CAB7100ADB9CB /* FlickrConst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrConst.swift; sourceTree = "<group>"; };
 		79C7AA071C0CAB7100ADB9CB /* FlickrClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrClient.swift; sourceTree = "<group>"; };
 		79C7AA0A1C0CABA600ADB9CB /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 		76650BD97DE1B2C6F4B0E204 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
+				7999F4D31CD835C000C60B80 /* Podfile.lock */,
 				BF24DAA2ED07B46D04CF4C43 /* Pods.debug.xcconfig */,
 				3D28B43D38576E3D0C238FD1 /* Pods.release.xcconfig */,
 			);
@@ -337,6 +340,7 @@
 			files = (
 				794C2E521BEA74A700452914 /* LaunchScreen.storyboard in Resources */,
 				794C2E4F1BEA74A700452914 /* Assets.xcassets in Resources */,
+				7999F4D41CD835C000C60B80 /* Podfile.lock in Resources */,
 				794C2E4A1BEA74A700452914 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
