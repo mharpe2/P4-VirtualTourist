@@ -1,0 +1,10 @@
+PODS:
+  - BNRCoreDataStack (1.2.3)
+
+DEPENDENCIES:
+  - BNRCoreDataStack
+
+SPEC CHECKSUMS:
+  BNRCoreDataStack: 10abcb19d2a3f397950a06e9b0915f4e695a826b
+
+COCOAPODS: 0.39.0
